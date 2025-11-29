@@ -6,6 +6,7 @@ public class Enrollment {
     private int enrollmentId;
     private int studentId;
     private int courseId;
+    private int semesterId;
     private String studentName;
     private String courseName;
     private String courseCode;
@@ -22,11 +23,12 @@ public class Enrollment {
     public Enrollment() {
     }
 
-    public Enrollment(int enrollmentId, int studentId, int courseId, 
+    public Enrollment(int enrollmentId, int studentId, int courseId, int semesterId,
                       Timestamp enrollmentDate, String grade, EnrollmentStatus status) {
         this.enrollmentId = enrollmentId;
         this.studentId = studentId;
         this.courseId = courseId;
+        this.semesterId = semesterId;
         this.enrollmentDate = enrollmentDate;
         this.grade = grade;
         this.status = status;
@@ -55,6 +57,14 @@ public class Enrollment {
 
     public void setCourseId(int courseId) {
         this.courseId = courseId;
+    }
+
+    public int getSemesterId() {
+        return semesterId;
+    }
+
+    public void setSemesterId(int semesterId) {
+        this.semesterId = semesterId;
     }
 
     public String getStudentName() {

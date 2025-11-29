@@ -10,11 +10,18 @@
                 <li><a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a></li>
                 <li><a href="${pageContext.request.contextPath}/admin/users">Manage Users</a></li>
                 <li><a href="${pageContext.request.contextPath}/admin/courses">Manage Courses</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/semesters/list">Manage Semesters</a></li>
+                <li><a href="${pageContext.request.contextPath}/attendance">Attendance</a></li>
+                <li><a href="${pageContext.request.contextPath}/grades">Grades</a></li>
+                <li><a href="${pageContext.request.contextPath}/gpa/admin/view">Student GPA</a></li>
                 <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
             </c:when>
             <c:when test="${sessionScope.user.userType == 'TEACHER'}">
                 <li><a href="${pageContext.request.contextPath}/teacher/dashboard">Dashboard</a></li>
                 <li><a href="${pageContext.request.contextPath}/teacher/courses" class="active">My Courses</a></li>
+                <li><a href="${pageContext.request.contextPath}/teacher/students">My Students</a></li>
+                <li><a href="${pageContext.request.contextPath}/attendance">Attendance</a></li>
+                <li><a href="${pageContext.request.contextPath}/grades">Grades</a></li>
                 <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
                 <li><a href="${pageContext.request.contextPath}/teacher/timetable">Timetable</a></li>
             </c:when>
@@ -22,6 +29,7 @@
                 <li><a href="${pageContext.request.contextPath}/student/dashboard">Dashboard</a></li>
                 <li><a href="${pageContext.request.contextPath}/student/courses" class="active">My Courses</a></li>
                 <li><a href="${pageContext.request.contextPath}/student/courses/available">Available Courses</a></li>
+                <li><a href="${pageContext.request.contextPath}/gpa/dashboard">My Grades & GPA</a></li>
                 <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
                 <li><a href="${pageContext.request.contextPath}/student/timetable">Timetable</a></li>
             </c:otherwise>

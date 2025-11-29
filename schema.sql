@@ -92,17 +92,124 @@ CREATE TABLE enrollments (
     enrollment_id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT NOT NULL COMMENT 'Foreign key to users table (STUDENT)',
     course_id INT NOT NULL COMMENT 'Foreign key to courses table',
+    semester_id INT COMMENT 'Foreign key to semesters table',
     enrollment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'When the student enrolled',
     grade VARCHAR(5) COMMENT 'Final grade (e.g., "A", "B+", "C")',
     status ENUM('ACTIVE', 'COMPLETED', 'DROPPED') DEFAULT 'ACTIVE' COMMENT 'Enrollment status',
     FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
-    UNIQUE KEY unique_enrollment (student_id, course_id) COMMENT 'Prevent duplicate enrollments',
+    UNIQUE KEY unique_enrollment (student_id, course_id, semester_id) COMMENT 'Prevent duplicate enrollments',
     INDEX idx_student_id (student_id),
     INDEX idx_course_id (course_id),
+    INDEX idx_semester_id (semester_id),
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Manages student course enrollments with schedule conflict prevention';
+
+-- =====================================================
+-- TABLE: semesters
+-- Stores academic year and semester information
+-- =====================================================
+CREATE TABLE semesters (
+    semester_id INT PRIMARY KEY AUTO_INCREMENT,
+    semester_name VARCHAR(50) NOT NULL COMMENT 'Semester name (e.g., "Fall 2024", "Spring 2025")',
+    semester_type ENUM('SEMESTER_1', 'SEMESTER_2', 'SEMESTER_3') NOT NULL COMMENT 'Semester type',
+    academic_year VARCHAR(20) NOT NULL COMMENT 'Academic year (e.g., "2024-2025")',
+    start_date DATE NOT NULL COMMENT 'Semester start date',
+    end_date DATE NOT NULL COMMENT 'Semester end date',
+    weeks INT NOT NULL COMMENT 'Number of weeks (16 for sem 1&2, 8 for sem 3)',
+    is_active BOOLEAN DEFAULT FALSE COMMENT 'Whether this is the current active semester',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_academic_year (academic_year),
+    INDEX idx_is_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Stores academic semester information';
+
+-- =====================================================
+-- TABLE: grade_components
+-- Stores grading breakdown configuration for courses
+-- =====================================================
+CREATE TABLE grade_components (
+    component_id INT PRIMARY KEY AUTO_INCREMENT,
+    course_id INT NOT NULL COMMENT 'Foreign key to courses table',
+    semester_id INT NOT NULL COMMENT 'Foreign key to semesters table',
+    inclass_percentage DECIMAL(5,2) NOT NULL DEFAULT 20.00 COMMENT 'In-class/attendance percentage (0-100)',
+    midterm_percentage DECIMAL(5,2) NOT NULL DEFAULT 30.00 COMMENT 'Midterm exam percentage (0-100)',
+    final_percentage DECIMAL(5,2) NOT NULL DEFAULT 50.00 COMMENT 'Final exam percentage (0-100)',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    FOREIGN KEY (semester_id) REFERENCES semesters(semester_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_course_semester (course_id, semester_id),
+    CONSTRAINT check_percentages CHECK (inclass_percentage + midterm_percentage + final_percentage = 100.00)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Stores grading component percentages for each course per semester';
+
+-- =====================================================
+-- TABLE: attendance
+-- Tracks student attendance for each class session
+-- =====================================================
+CREATE TABLE attendance (
+    attendance_id INT PRIMARY KEY AUTO_INCREMENT,
+    enrollment_id INT NOT NULL COMMENT 'Foreign key to enrollments table',
+    attendance_date DATE NOT NULL COMMENT 'Date of the class session',
+    status ENUM('PRESENT', 'ABSENT', 'LATE', 'EXCUSED') NOT NULL DEFAULT 'PRESENT' COMMENT 'Attendance status',
+    notes TEXT COMMENT 'Additional notes about attendance',
+    recorded_by INT COMMENT 'Foreign key to users table (teacher who recorded)',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (enrollment_id) REFERENCES enrollments(enrollment_id) ON DELETE CASCADE,
+    FOREIGN KEY (recorded_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    UNIQUE KEY unique_attendance (enrollment_id, attendance_date),
+    INDEX idx_enrollment_id (enrollment_id),
+    INDEX idx_attendance_date (attendance_date),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Tracks student attendance with automatic course drop for excessive absences';
+
+-- =====================================================
+-- TABLE: grades
+-- Stores individual grade components for each enrollment
+-- =====================================================
+CREATE TABLE grades (
+    grade_id INT PRIMARY KEY AUTO_INCREMENT,
+    enrollment_id INT NOT NULL COMMENT 'Foreign key to enrollments table',
+    inclass_score DECIMAL(5,2) COMMENT 'In-class/attendance score (0-100)',
+    midterm_score DECIMAL(5,2) COMMENT 'Midterm exam score (0-100)',
+    final_score DECIMAL(5,2) COMMENT 'Final exam score (0-100)',
+    total_score DECIMAL(5,2) COMMENT 'Calculated total score (0-100)',
+    letter_grade VARCHAR(5) COMMENT 'Letter grade (A, A-, B+, B, etc.)',
+    grade_point DECIMAL(3,2) COMMENT 'Grade point for GPA (4.0 scale)',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (enrollment_id) REFERENCES enrollments(enrollment_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_enrollment_grade (enrollment_id),
+    INDEX idx_enrollment_id (enrollment_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Stores detailed grade breakdowns and calculated GPA';
+
+-- =====================================================
+-- TABLE: gpa_records
+-- Stores semester and cumulative GPA for each student
+-- =====================================================
+CREATE TABLE gpa_records (
+    gpa_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL COMMENT 'Foreign key to users table (STUDENT)',
+    semester_id INT COMMENT 'Foreign key to semesters table (NULL for cumulative)',
+    gpa DECIMAL(3,2) NOT NULL COMMENT 'GPA value (0.00-4.00)',
+    total_credits INT NOT NULL DEFAULT 0 COMMENT 'Total credits for this period',
+    total_grade_points DECIMAL(7,2) NOT NULL DEFAULT 0.00 COMMENT 'Total grade points earned',
+    is_cumulative BOOLEAN DEFAULT FALSE COMMENT 'Whether this is cumulative GPA',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (semester_id) REFERENCES semesters(semester_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_student_semester (student_id, semester_id, is_cumulative),
+    INDEX idx_student_id (student_id),
+    INDEX idx_semester_id (semester_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Stores semester and cumulative GPA calculations';
 
 -- =====================================================
 -- TABLE: announcements
@@ -195,33 +302,72 @@ INSERT INTO courses (course_code, course_name, description, credits, teacher_id,
 -- SAMPLE DATA: Enrollments
 -- =====================================================
 -- Alice Johnson (student_id=5) enrollments
-INSERT INTO enrollments (student_id, course_id, status, grade) VALUES
-(5, 1, 'ACTIVE', NULL),        -- CS101
-(5, 4, 'ACTIVE', NULL),        -- MATH201
-(5, 6, 'ACTIVE', NULL);        -- ENG101
+INSERT INTO enrollments (student_id, course_id, semester_id, status, grade) VALUES
+(5, 1, 1, 'ACTIVE', NULL),        -- CS101
+(5, 4, 1, 'ACTIVE', NULL),        -- MATH201
+(5, 6, 1, 'ACTIVE', NULL);        -- ENG101
 
 -- Bob Williams (student_id=6) enrollments
-INSERT INTO enrollments (student_id, course_id, status, grade) VALUES
-(6, 1, 'ACTIVE', NULL),        -- CS101
-(6, 2, 'ACTIVE', NULL),        -- CS102
-(6, 5, 'COMPLETED', 'B+');     -- MATH202 (completed)
+INSERT INTO enrollments (student_id, course_id, semester_id, status, grade) VALUES
+(6, 1, 1, 'ACTIVE', NULL),        -- CS101
+(6, 2, 1, 'ACTIVE', NULL),        -- CS102
+(6, 5, 1, 'COMPLETED', 'B+');     -- MATH202 (completed)
 
 -- Charlie Brown (student_id=7) enrollments
-INSERT INTO enrollments (student_id, course_id, status, grade) VALUES
-(7, 1, 'ACTIVE', NULL),        -- CS101
-(7, 3, 'ACTIVE', NULL),        -- CS201
-(7, 7, 'ACTIVE', NULL);        -- ENG201
+INSERT INTO enrollments (student_id, course_id, semester_id, status, grade) VALUES
+(7, 1, 1, 'ACTIVE', NULL),        -- CS101
+(7, 3, 1, 'ACTIVE', NULL),        -- CS201
+(7, 7, 1, 'ACTIVE', NULL);        -- ENG201
 
 -- Diana Ross (student_id=8) enrollments
-INSERT INTO enrollments (student_id, course_id, status, grade) VALUES
-(8, 2, 'ACTIVE', NULL),        -- CS102
-(8, 4, 'ACTIVE', NULL),        -- MATH201
-(8, 6, 'ACTIVE', NULL);        -- ENG101
+INSERT INTO enrollments (student_id, course_id, semester_id, status, grade) VALUES
+(8, 2, 1, 'ACTIVE', NULL),        -- CS102
+(8, 4, 1, 'ACTIVE', NULL),        -- MATH201
+(8, 6, 1, 'ACTIVE', NULL);        -- ENG101
 
 -- Eric Taylor (student_id=9) enrollments
-INSERT INTO enrollments (student_id, course_id, status, grade) VALUES
-(9, 5, 'ACTIVE', NULL),        -- MATH202
-(9, 7, 'ACTIVE', NULL);        -- ENG201
+INSERT INTO enrollments (student_id, course_id, semester_id, status, grade) VALUES
+(9, 5, 1, 'ACTIVE', NULL),        -- MATH202
+(9, 7, 1, 'ACTIVE', NULL);        -- ENG201
+
+-- =====================================================
+-- SAMPLE DATA: Semesters (Academic Year 2024-2025)
+-- =====================================================
+INSERT INTO semesters (semester_name, semester_type, academic_year, start_date, end_date, weeks, is_active) VALUES
+('Fall 2024', 'SEMESTER_1', '2024-2025', '2024-09-01', '2024-12-20', 16, TRUE),
+('Spring 2025', 'SEMESTER_2', '2024-2025', '2025-01-15', '2025-05-15', 16, FALSE),
+('Summer 2025', 'SEMESTER_3', '2024-2025', '2025-06-01', '2025-07-31', 8, FALSE);
+
+-- =====================================================
+-- SAMPLE DATA: Grade Components (Default grading breakdown)
+-- =====================================================
+-- CS101 - Introduction to Programming
+INSERT INTO grade_components (course_id, semester_id, inclass_percentage, midterm_percentage, final_percentage) VALUES
+(1, 1, 20.00, 30.00, 50.00);
+
+-- CS102 - Data Structures
+INSERT INTO grade_components (course_id, semester_id, inclass_percentage, midterm_percentage, final_percentage) VALUES
+(2, 1, 15.00, 35.00, 50.00);
+
+-- CS201 - Database Systems
+INSERT INTO grade_components (course_id, semester_id, inclass_percentage, midterm_percentage, final_percentage) VALUES
+(3, 1, 25.00, 25.00, 50.00);
+
+-- MATH201 - Calculus I
+INSERT INTO grade_components (course_id, semester_id, inclass_percentage, midterm_percentage, final_percentage) VALUES
+(4, 1, 10.00, 40.00, 50.00);
+
+-- MATH202 - Linear Algebra
+INSERT INTO grade_components (course_id, semester_id, inclass_percentage, midterm_percentage, final_percentage) VALUES
+(5, 1, 10.00, 40.00, 50.00);
+
+-- ENG101 - English Composition
+INSERT INTO grade_components (course_id, semester_id, inclass_percentage, midterm_percentage, final_percentage) VALUES
+(6, 1, 30.00, 20.00, 50.00);
+
+-- ENG201 - Literature Analysis
+INSERT INTO grade_components (course_id, semester_id, inclass_percentage, midterm_percentage, final_percentage) VALUES
+(7, 1, 30.00, 20.00, 50.00);
 
 -- =====================================================
 -- VERIFICATION QUERIES (Optional - for testing)
