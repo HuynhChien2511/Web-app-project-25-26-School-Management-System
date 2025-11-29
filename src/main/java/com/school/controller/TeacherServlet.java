@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.school.dao.CourseDAO;
 import com.school.dao.EnrollmentDAO;
-import com.school.dao.UserDAO;
 import com.school.model.Course;
 import com.school.model.Enrollment;
 import com.school.model.User;
@@ -19,13 +18,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class TeacherServlet extends HttpServlet {
     private CourseDAO courseDAO;
     private EnrollmentDAO enrollmentDAO;
-    private UserDAO userDAO;
 
     @Override
     public void init() throws ServletException {
         courseDAO = new CourseDAO();
         enrollmentDAO = new EnrollmentDAO();
-        userDAO = new UserDAO();
     }
 
     @Override
@@ -45,8 +42,6 @@ public class TeacherServlet extends HttpServlet {
             listMyCourses(request, response);
         } else if (pathInfo.equals("/courses/students")) {
             viewCourseStudents(request, response);
-        } else if (pathInfo.equals("/students")) {
-            listAllStudents(request, response);
         } else if (pathInfo.equals("/timetable")) {
             viewTimetable(request, response);
         } else {
@@ -118,14 +113,6 @@ public class TeacherServlet extends HttpServlet {
         request.setAttribute("course", course);
         request.setAttribute("enrollments", enrollments);
         request.getRequestDispatcher("/WEB-INF/views/teacher/course-students.jsp").forward(request, response);
-    }
-
-    private void listAllStudents(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        List<User> students = userDAO.getUsersByType(User.UserType.STUDENT);
-        
-        request.setAttribute("students", students);
-        request.getRequestDispatcher("/WEB-INF/views/teacher/students.jsp").forward(request, response);
     }
 
     private void updateGrade(HttpServletRequest request, HttpServletResponse response)
