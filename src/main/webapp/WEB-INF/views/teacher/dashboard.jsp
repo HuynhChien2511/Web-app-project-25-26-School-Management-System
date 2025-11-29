@@ -7,6 +7,7 @@
     <ul class="sidebar-menu">
         <li><a href="${pageContext.request.contextPath}/teacher/dashboard" class="active">Dashboard</a></li>
         <li><a href="${pageContext.request.contextPath}/teacher/courses">My Courses</a></li>
+        <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
         <li><a href="${pageContext.request.contextPath}/teacher/timetable">Timetable</a></li>
     </ul>
 </div>

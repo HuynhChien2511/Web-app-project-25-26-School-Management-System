@@ -105,6 +105,50 @@ CREATE TABLE enrollments (
   COMMENT='Manages student course enrollments with schedule conflict prevention';
 
 -- =====================================================
+-- TABLE: announcements
+-- Stores announcements posted by admins and teachers
+-- =====================================================
+CREATE TABLE announcements (
+    announcement_id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(200) NOT NULL COMMENT 'Announcement title',
+    content TEXT NOT NULL COMMENT 'Announcement content/message',
+    author_id INT NOT NULL COMMENT 'Foreign key to users table (ADMIN or TEACHER)',
+    course_id INT COMMENT 'Foreign key to courses table (NULL for school-wide announcements)',
+    is_important BOOLEAN DEFAULT FALSE COMMENT 'Flag for important/urgent announcements',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'When the announcement was posted',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+    FOREIGN KEY (author_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    INDEX idx_author_id (author_id),
+    INDEX idx_course_id (course_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Stores system-wide and course-specific announcements';
+
+-- =====================================================
+-- TABLE: forum_posts
+-- Stores forum posts and replies for course discussions
+-- =====================================================
+CREATE TABLE forum_posts (
+    post_id INT PRIMARY KEY AUTO_INCREMENT,
+    course_id INT NOT NULL COMMENT 'Foreign key to courses table',
+    author_id INT NOT NULL COMMENT 'Foreign key to users table',
+    parent_post_id INT COMMENT 'Foreign key to parent post (NULL for top-level posts)',
+    title VARCHAR(200) COMMENT 'Post title (only for top-level posts)',
+    content TEXT NOT NULL COMMENT 'Post content/message',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'When the post was created',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+    FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_post_id) REFERENCES forum_posts(post_id) ON DELETE CASCADE,
+    INDEX idx_course_id (course_id),
+    INDEX idx_author_id (author_id),
+    INDEX idx_parent_post_id (parent_post_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Stores forum posts and threaded replies for course discussions';
+
+-- =====================================================
 -- INITIAL DATA: System Administrator
 -- =====================================================
 INSERT INTO users (username, password, full_name, email, user_type) VALUES

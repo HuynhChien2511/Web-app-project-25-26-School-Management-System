@@ -8,6 +8,7 @@
         <li><a href="${pageContext.request.contextPath}/student/dashboard">Dashboard</a></li>
         <li><a href="${pageContext.request.contextPath}/student/courses" class="active">My Courses</a></li>
         <li><a href="${pageContext.request.contextPath}/student/courses/available">Available Courses</a></li>
+        <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
         <li><a href="${pageContext.request.contextPath}/student/timetable">Timetable</a></li>
     </ul>
 </div>
@@ -53,6 +54,8 @@
                             <a href="${pageContext.request.contextPath}/student/courses/details?courseId=${enrollment.courseId}" 
                                class="btn btn-info btn-sm">Details</a>
                             <c:if test="${enrollment.status == 'ACTIVE'}">
+                                <a href="${pageContext.request.contextPath}/forum/course?courseId=${enrollment.courseId}" 
+                                   class="btn btn-success btn-sm">💬 Forum</a>
                                 <form action="${pageContext.request.contextPath}/student/courses/drop" method="post" style="display:inline;"
                                       onsubmit="return confirm('Are you sure you want to drop this course?');">
                                     <input type="hidden" name="enrollmentId" value="${enrollment.enrollmentId}">

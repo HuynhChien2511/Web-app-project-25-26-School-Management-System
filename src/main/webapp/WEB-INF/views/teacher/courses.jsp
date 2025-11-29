@@ -7,6 +7,7 @@
     <ul class="sidebar-menu">
         <li><a href="${pageContext.request.contextPath}/teacher/dashboard">Dashboard</a></li>
         <li><a href="${pageContext.request.contextPath}/teacher/courses" class="active">My Courses</a></li>
+        <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
         <li><a href="${pageContext.request.contextPath}/teacher/timetable">Timetable</a></li>
     </ul>
 </div>
@@ -39,6 +40,8 @@
                         <td>
                             <a href="${pageContext.request.contextPath}/teacher/courses/students?courseId=${course.courseId}" 
                                class="btn btn-info btn-sm">Manage Students</a>
+                            <a href="${pageContext.request.contextPath}/forum/course?courseId=${course.courseId}" 
+                               class="btn btn-success btn-sm">💬 Forum</a>
                         </td>
                     </tr>
                 </c:forEach>

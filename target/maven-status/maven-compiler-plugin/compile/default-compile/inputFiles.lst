@@ -1,3 +1,5 @@
+D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\dao\AnnouncementDAO.java
+D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\model\Announcement.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\model\User.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\dao\CourseDAO.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\dao\EnrollmentDAO.java
@@ -7,10 +9,14 @@ D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\dao\U
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\controller\LogoutServlet.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\controller\LoginServlet.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\controller\TeacherServlet.java
+D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\controller\AnnouncementServlet.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\util\SessionValidator.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\controller\StudentServlet.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\model\Course.java
+D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\model\ForumPost.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\filter\AdminFilter.java
+D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\controller\ForumServlet.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\model\Enrollment.java
+D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\dao\ForumDAO.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\util\DatabaseConnection.java
 D:\VS-code save\webapp\Web-app-project-25-26-real\src\main\java\com\school\filter\AuthFilter.java

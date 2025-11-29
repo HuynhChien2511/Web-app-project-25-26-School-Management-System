@@ -8,6 +8,7 @@
         <li><a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a></li>
         <li><a href="${pageContext.request.contextPath}/admin/users">Manage Users</a></li>
         <li><a href="${pageContext.request.contextPath}/admin/courses" class="active">Manage Courses</a></li>
+        <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
     </ul>
 </div>
 
@@ -63,6 +64,7 @@
                         <td>${course.enrolledCount} / ${course.maxStudents}</td>
                         <td>
                             <a href="${pageContext.request.contextPath}/admin/courses/edit?id=${course.courseId}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="${pageContext.request.contextPath}/forum/course?courseId=${course.courseId}" class="btn btn-success btn-sm">💬 Forum</a>
                             <form action="${pageContext.request.contextPath}/admin/courses/delete" method="post" style="display:inline;"
                                   onsubmit="return confirm('Are you sure you want to delete this course?');">
                                 <input type="hidden" name="id" value="${course.courseId}">

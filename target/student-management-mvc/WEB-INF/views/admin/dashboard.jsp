@@ -8,6 +8,7 @@
         <li><a href="${pageContext.request.contextPath}/admin/dashboard" class="active">Dashboard</a></li>
         <li><a href="${pageContext.request.contextPath}/admin/users">Manage Users</a></li>
         <li><a href="${pageContext.request.contextPath}/admin/courses">Manage Courses</a></li>
+        <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
     </ul>
 </div>
 

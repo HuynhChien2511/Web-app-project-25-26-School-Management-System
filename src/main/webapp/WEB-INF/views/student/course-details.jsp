@@ -8,6 +8,7 @@
         <li><a href="${pageContext.request.contextPath}/student/dashboard">Dashboard</a></li>
         <li><a href="${pageContext.request.contextPath}/student/courses">My Courses</a></li>
         <li><a href="${pageContext.request.contextPath}/student/courses/available">Available Courses</a></li>
+        <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
         <li><a href="${pageContext.request.contextPath}/student/timetable">Timetable</a></li>
     </ul>
 </div>
@@ -72,6 +73,9 @@
         </c:if>
         
         <div style="margin-top: 20px;">
+            <c:if test="${enrollment != null && enrollment.status == 'ACTIVE'}">
+                <a href="${pageContext.request.contextPath}/forum/course?courseId=${course.courseId}" class="btn btn-info">💬 Course Forum</a>
+            </c:if>
             <a href="${pageContext.request.contextPath}/student/courses/available" class="btn btn-primary">Back to Available Courses</a>
         </div>
     </div>

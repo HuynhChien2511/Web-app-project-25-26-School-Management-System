@@ -71,6 +71,26 @@
         <url-pattern>/change-password</url-pattern>
     </servlet-mapping>
 
+    <!-- Announcement Servlet -->
+    <servlet>
+        <servlet-name>AnnouncementServlet</servlet-name>
+        <servlet-class>com.school.controller.AnnouncementServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AnnouncementServlet</servlet-name>
+        <url-pattern>/announcements/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Forum Servlet -->
+    <servlet>
+        <servlet-name>ForumServlet</servlet-name>
+        <servlet-class>com.school.controller.ForumServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ForumServlet</servlet-name>
+        <url-pattern>/forum/*</url-pattern>
+    </servlet-mapping>
+
     <!-- Session timeout (30 minutes) -->
     <session-config>
         <session-timeout>30</session-timeout>
