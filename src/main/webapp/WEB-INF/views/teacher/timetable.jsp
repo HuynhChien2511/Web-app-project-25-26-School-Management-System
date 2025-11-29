@@ -81,10 +81,33 @@
                                                                         int height = numPeriods * 60 - 8;
                                             %>
                                                                         <div class="course-block" style="height: <%=height%>px;">
-                                                                            <div class="course-code"><%=course.getCourseCode()%></div>
                                                                             <div class="course-name"><%=course.getCourseName()%></div>
                                                                             <div class="course-room">📍 <%=course.getRoomNumber()%></div>
-                                                                            <div class="course-time"><%=course.getScheduleTime()%></div>
+                                                                            
+                                                                            <!-- Hover tooltip with all course information -->
+                                                                            <div class="course-tooltip">
+                                                                                <div class="tooltip-header">
+                                                                                    <strong><%=course.getCourseName()%></strong>
+                                                                                </div>
+                                                                                <div class="tooltip-content">
+                                                                                    <div class="tooltip-row">
+                                                                                        <span class="tooltip-label">Course ID:</span>
+                                                                                        <span class="tooltip-value"><%=course.getCourseCode()%></span>
+                                                                                    </div>
+                                                                                    <div class="tooltip-row">
+                                                                                        <span class="tooltip-label">Course Name:</span>
+                                                                                        <span class="tooltip-value"><%=course.getCourseName()%></span>
+                                                                                    </div>
+                                                                                    <div class="tooltip-row">
+                                                                                        <span class="tooltip-label">Room:</span>
+                                                                                        <span class="tooltip-value"><%=course.getRoomNumber()%></span>
+                                                                                    </div>
+                                                                                    <div class="tooltip-row">
+                                                                                        <span class="tooltip-label">Class:</span>
+                                                                                        <span class="tooltip-value"><%=course.getCourseCode()%></span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
                                             <%
                                                                     }
@@ -175,7 +198,7 @@
         margin: 2px;
         font-size: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        overflow: hidden;
+        overflow: visible;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -186,6 +209,14 @@
         left: 4px;
         right: 4px;
         z-index: 10;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .course-block:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        z-index: 100;
     }
     
     .course-code {
@@ -199,8 +230,21 @@
     }
     
     .course-name {
-        font-size: 9px;
+        font-size: 10px;
+        font-weight: 600;
         margin-bottom: 3px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-wrap: break-word;
+        width: 100%;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .course-room {
+        font-size: 9px;
         opacity: 0.9;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -208,16 +252,93 @@
         width: 100%;
     }
     
-    .course-room,
-    .course-time {
-        font-size: 8px;
-        opacity: 0.8;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        word-wrap: break-word;
-        width: 100%;
-        margin-bottom: 2px;
+    /* Tooltip styles */
+    .course-tooltip {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 8px;
+        background: white;
+        color: #333;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        padding: 0;
+        min-width: 280px;
+        max-width: 320px;
+        z-index: 1000;
+        border: 2px solid #667eea;
+        animation: fadeIn 0.2s ease-in-out;
     }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+    
+    .course-block:hover .course-tooltip {
+        display: block;
+    }
+    
+    .tooltip-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 15px;
+        border-radius: 6px 6px 0 0;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .tooltip-content {
+        padding: 15px;
+    }
+    
+    .tooltip-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 12px;
+    }
+    
+    .tooltip-row:last-child {
+        border-bottom: none;
+    }
+    
+    .tooltip-label {
+        font-weight: 600;
+        color: #667eea;
+        flex: 0 0 45%;
+        text-align: left;
+    }
+    
+    .tooltip-value {
+        color: #333;
+        flex: 0 0 55%;
+        text-align: right;
+        font-weight: 500;
+    }
+    
+    /* Arrow for tooltip */
+    .course-tooltip::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 0 10px 10px 10px;
+        border-style: solid;
+        border-color: transparent transparent #667eea transparent;
+    }
+
     
     .course-list {
         display: grid;
