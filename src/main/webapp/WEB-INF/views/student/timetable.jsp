@@ -8,6 +8,7 @@
         <li><a href="${pageContext.request.contextPath}/student/dashboard">Dashboard</a></li>
         <li><a href="${pageContext.request.contextPath}/student/courses">My Courses</a></li>
         <li><a href="${pageContext.request.contextPath}/student/courses/available">Available Courses</a></li>
+        <li><a href="${pageContext.request.contextPath}/gpa/dashboard">My Grades & GPA</a></li>
         <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
         <li><a href="${pageContext.request.contextPath}/student/timetable" class="active">Timetable</a></li>
     </ul>

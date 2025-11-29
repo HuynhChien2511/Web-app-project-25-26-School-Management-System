@@ -91,6 +91,46 @@
         <url-pattern>/forum/*</url-pattern>
     </servlet-mapping>
 
+    <!-- Semester Servlet (Admin) -->
+    <servlet>
+        <servlet-name>SemesterServlet</servlet-name>
+        <servlet-class>com.school.controller.SemesterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SemesterServlet</servlet-name>
+        <url-pattern>/admin/semesters/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Attendance Servlet (Teacher/Admin) -->
+    <servlet>
+        <servlet-name>AttendanceServlet</servlet-name>
+        <servlet-class>com.school.controller.AttendanceServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AttendanceServlet</servlet-name>
+        <url-pattern>/attendance/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Grade Servlet (Teacher/Admin/Student) -->
+    <servlet>
+        <servlet-name>GradeServlet</servlet-name>
+        <servlet-class>com.school.controller.GradeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GradeServlet</servlet-name>
+        <url-pattern>/grades/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- GPA Servlet (All Users) -->
+    <servlet>
+        <servlet-name>GpaServlet</servlet-name>
+        <servlet-class>com.school.controller.GpaServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GpaServlet</servlet-name>
+        <url-pattern>/gpa/*</url-pattern>
+    </servlet-mapping>
+
     <!-- Session timeout (30 minutes) -->
     <session-config>
         <session-timeout>30</session-timeout>

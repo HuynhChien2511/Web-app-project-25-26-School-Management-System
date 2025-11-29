@@ -17,10 +17,11 @@ public class EnrollmentDAO {
         List<Enrollment> enrollments = new ArrayList<>();
         String sql = "SELECT e.*, c.course_name, c.course_code, c.credits, c.max_students, " +
                      "c.schedule_days, c.schedule_time, c.room_number, " +
-                     "u.full_name as teacher_name " +
+                     "u.full_name as teacher_name, s.semester_name " +
                      "FROM enrollments e " +
                      "JOIN courses c ON e.course_id = c.course_id " +
                      "LEFT JOIN users u ON c.teacher_id = u.user_id " +
+                     "LEFT JOIN semesters s ON e.semester_id = s.semester_id " +
                      "WHERE e.student_id = ? " +
                      "ORDER BY e.enrollment_date DESC";
         
@@ -41,10 +42,11 @@ public class EnrollmentDAO {
 
     public List<Enrollment> getEnrollmentsByCourse(int courseId) {
         List<Enrollment> enrollments = new ArrayList<>();
-        String sql = "SELECT e.*, u.full_name as student_name, u.email, c.course_name, c.course_code " +
+        String sql = "SELECT e.*, u.full_name as student_name, u.email, c.course_name, c.course_code, s.semester_name " +
                      "FROM enrollments e " +
                      "JOIN users u ON e.student_id = u.user_id " +
                      "JOIN courses c ON e.course_id = c.course_id " +
+                     "LEFT JOIN semesters s ON e.semester_id = s.semester_id " +
                      "WHERE e.course_id = ? " +
                      "ORDER BY u.full_name";
         
@@ -64,10 +66,11 @@ public class EnrollmentDAO {
     }
 
     public Enrollment getEnrollment(int studentId, int courseId) {
-        String sql = "SELECT e.*, c.course_name, c.course_code, u.full_name as student_name " +
+        String sql = "SELECT e.*, c.course_name, c.course_code, u.full_name as student_name, s.semester_name " +
                      "FROM enrollments e " +
                      "JOIN courses c ON e.course_id = c.course_id " +
                      "JOIN users u ON e.student_id = u.user_id " +
+                     "LEFT JOIN semesters s ON e.semester_id = s.semester_id " +
                      "WHERE e.student_id = ? AND e.course_id = ?";
         
         try (Connection conn = DatabaseConnection.getConnection();
@@ -87,7 +90,8 @@ public class EnrollmentDAO {
     }
 
     public boolean enrollStudent(int studentId, int courseId) {
-        String sql = "INSERT INTO enrollments (student_id, course_id, status) VALUES (?, ?, 'ACTIVE')";
+        String sql = "INSERT INTO enrollments (student_id, course_id, semester_id, status) " +
+                     "SELECT ?, ?, semester_id, 'ACTIVE' FROM semesters WHERE is_active = TRUE LIMIT 1";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -186,6 +190,14 @@ public class EnrollmentDAO {
         enrollment.setEnrollmentId(rs.getInt("enrollment_id"));
         enrollment.setStudentId(rs.getInt("student_id"));
         enrollment.setCourseId(rs.getInt("course_id"));
+        
+        // Set semester_id if available
+        try {
+            enrollment.setSemesterId(rs.getInt("semester_id"));
+        } catch (SQLException e) {
+            // semester_id not present in this query
+        }
+        
         enrollment.setEnrollmentDate(rs.getTimestamp("enrollment_date"));
         enrollment.setGrade(rs.getString("grade"));
         enrollment.setStatus(Enrollment.EnrollmentStatus.valueOf(rs.getString("status")));
