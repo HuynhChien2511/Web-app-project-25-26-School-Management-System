@@ -17,7 +17,7 @@
 </div>
 
 <div class="main-content">
-    <div class="content-header">
+    <div class="content-header">    
         <h2>Admin Dashboard</h2>
     </div>
     

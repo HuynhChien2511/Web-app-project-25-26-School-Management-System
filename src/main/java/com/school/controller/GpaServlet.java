@@ -6,6 +6,7 @@ import java.util.List;
 import com.school.dao.EnrollmentDAO;
 import com.school.dao.GpaRecordDAO;
 import com.school.dao.GradeDAO;
+import com.school.dao.UserDAO;
 import com.school.dao.SemesterDAO;
 import com.school.model.Enrollment;
 import com.school.model.GpaRecord;
@@ -22,6 +23,7 @@ public class GpaServlet extends HttpServlet {
     private GradeDAO gradeDAO;
     private EnrollmentDAO enrollmentDAO;
     private SemesterDAO semesterDAO;
+    private UserDAO userDAO;
 
     @Override
     public void init() throws ServletException {

@@ -31,7 +31,7 @@ public class DatabaseConnection {
                 // Fallback to default values
                 URL = "jdbc:mysql://127.0.0.1:3306/school_management";
                 USERNAME = "root";
-                PASSWORD = "1234";
+                PASSWORD = "1234567890";
                 DRIVER = "com.mysql.cj.jdbc.Driver";
                 Class.forName(DRIVER);
             }
