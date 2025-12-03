@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.school.dao.EnrollmentDAO;
 import com.school.dao.GpaRecordDAO;
-import com.school.dao.GradeDAO;
 import com.school.dao.SemesterDAO;
+import com.school.dao.UserDAO;
 import com.school.model.Enrollment;
 import com.school.model.GpaRecord;
 import com.school.model.Semester;
@@ -19,16 +19,16 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class GpaServlet extends HttpServlet {
     private GpaRecordDAO gpaRecordDAO;
-    private GradeDAO gradeDAO;
     private EnrollmentDAO enrollmentDAO;
     private SemesterDAO semesterDAO;
+    private UserDAO userDAO;
 
     @Override
     public void init() throws ServletException {
         gpaRecordDAO = new GpaRecordDAO();
-        gradeDAO = new GradeDAO();
         enrollmentDAO = new EnrollmentDAO();
         semesterDAO = new SemesterDAO();
+        userDAO = new UserDAO();
     }
 
     @Override
@@ -48,6 +48,12 @@ public class GpaServlet extends HttpServlet {
                 showStudentGpaDashboard(request, response);
             } else {
                 showStudentGpaDashboard(request, response); // Can view any student
+            }
+        } else if (pathInfo.equals("/admin/view")) {
+            if (user.getUserType() != User.UserType.STUDENT) {
+                showAdminGpaView(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
             }
         } else if (pathInfo.equals("/calculate")) {
             if (user.getUserType() != User.UserType.STUDENT) {
@@ -147,6 +153,44 @@ public class GpaServlet extends HttpServlet {
 
         request.getSession().setAttribute("message", 
             "GPA recalculated for " + recalculatedCount + " semester(s)!");
-        response.sendRedirect(request.getContextPath() + "/gpa/dashboard?studentId=" + studentId);
+        response.sendRedirect(request.getContextPath() + "/gpa/admin/view?studentId=" + studentId);
+    }
+
+    private void showAdminGpaView(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        String studentIdParam = request.getParameter("studentId");
+        
+        // If no student ID provided, show search form only
+        if (studentIdParam == null || studentIdParam.isEmpty()) {
+            request.getRequestDispatcher("/WEB-INF/views/admin/student-gpa.jsp").forward(request, response);
+            return;
+        }
+        
+        int studentId = Integer.parseInt(studentIdParam);
+        
+        // Get student information
+        User student = userDAO.getUserById(studentId);
+        
+        // Get all GPA records
+        List<GpaRecord> gpaRecords = gpaRecordDAO.getGpaRecordsByStudent(studentId);
+        
+        // Get latest GPA record for summary
+        GpaRecord latestGpa = gpaRecordDAO.getLatestGpaRecord(studentId);
+        
+        // Get all enrollments with grades
+        List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByStudent(studentId);
+        
+        // Get all semesters
+        List<Semester> semesters = semesterDAO.getAllSemesters();
+
+        request.setAttribute("student", student);
+        request.setAttribute("studentId", studentId);
+        request.setAttribute("gpaRecords", gpaRecords);
+        request.setAttribute("latestGpa", latestGpa);
+        request.setAttribute("enrollments", enrollments);
+        request.setAttribute("semesters", semesters);
+        
+        request.getRequestDispatcher("/WEB-INF/views/admin/student-gpa.jsp").forward(request, response);
     }
 }
