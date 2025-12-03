@@ -258,10 +258,6 @@
     .course-tooltip {
         display: none;
         position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        margin-top: 8px;
         background: white;
         color: #333;
         border-radius: 8px;
@@ -277,11 +273,9 @@
     @keyframes fadeIn {
         from {
             opacity: 0;
-            transform: translateX(-50%) translateY(-5px);
         }
         to {
             opacity: 1;
-            transform: translateX(-50%) translateY(0);
         }
     }
     
@@ -329,8 +323,8 @@
         font-weight: 500;
     }
     
-    /* Arrow for tooltip */
-    .course-tooltip::before {
+    /* Arrow for tooltip - default position (below) */
+    .course-tooltip.tooltip-below::before {
         content: '';
         position: absolute;
         top: -10px;
@@ -339,6 +333,25 @@
         border-width: 0 10px 10px 10px;
         border-style: solid;
         border-color: transparent transparent #667eea transparent;
+    }
+    
+    /* Arrow for tooltip when positioned above */
+    .course-tooltip.tooltip-above::before {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 10px 10px 0 10px;
+        border-style: solid;
+        border-color: #667eea transparent transparent transparent;
+    }
+    
+    /* Ensure timetable container has relative positioning */
+    .timetable-container {
+        position: relative;
+        overflow-x: auto;
+        overflow-y: visible;
     }
 
     
@@ -360,5 +373,101 @@
         color: #666;
     }
 </style>
+
+<script>
+    // Tooltip positioning to keep it within timetable bounds
+    document.addEventListener('DOMContentLoaded', function() {
+        const courseBlocks = document.querySelectorAll('.course-block');
+        const timetableContainer = document.querySelector('.timetable-container');
+        
+        courseBlocks.forEach(block => {
+            const tooltip = block.querySelector('.course-tooltip');
+            if (!tooltip) return;
+            
+            // Position tooltip on hover
+            block.addEventListener('mouseenter', function() {
+                positionTooltip(block, tooltip, timetableContainer);
+            });
+            
+            // Reposition on window resize
+            window.addEventListener('resize', function() {
+                if (tooltip.style.display === 'block') {
+                    positionTooltip(block, tooltip, timetableContainer);
+                }
+            });
+        });
+    });
+    
+    function positionTooltip(block, tooltip, container) {
+        // Reset tooltip position to get accurate measurements
+        tooltip.style.top = '';
+        tooltip.style.left = '';
+        tooltip.style.right = '';
+        tooltip.style.bottom = '';
+        tooltip.style.transform = '';
+        
+        // Get bounding rectangles
+        const blockRect = block.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        
+        // Calculate available space in each direction
+        const spaceAbove = blockRect.top - containerRect.top;
+        const spaceBelow = containerRect.bottom - blockRect.bottom;
+        const spaceLeft = blockRect.left - containerRect.left;
+        const spaceRight = containerRect.right - blockRect.right;
+        
+        // Determine vertical position (prefer below, but use above if not enough space)
+        let verticalPosition = 'below';
+        if (spaceBelow < tooltipRect.height + 20 && spaceAbove > tooltipRect.height + 20) {
+            verticalPosition = 'above';
+        }
+        
+        // Determine horizontal alignment
+        let horizontalAlign = 'center';
+        const tooltipHalfWidth = tooltipRect.width / 2;
+        const blockCenterX = blockRect.left + (blockRect.width / 2);
+        
+        // Check if centered tooltip would overflow left or right
+        if (blockCenterX - tooltipHalfWidth < containerRect.left + 10) {
+            horizontalAlign = 'left';
+        } else if (blockCenterX + tooltipHalfWidth > containerRect.right - 10) {
+            horizontalAlign = 'right';
+        }
+        
+        // Apply positioning
+        if (verticalPosition === 'below') {
+            tooltip.style.top = '100%';
+            tooltip.style.bottom = 'auto';
+            tooltip.style.marginTop = '8px';
+            tooltip.style.marginBottom = '0';
+            // Update arrow position for below
+            tooltip.classList.remove('tooltip-above');
+            tooltip.classList.add('tooltip-below');
+        } else {
+            tooltip.style.top = 'auto';
+            tooltip.style.bottom = '100%';
+            tooltip.style.marginTop = '0';
+            tooltip.style.marginBottom = '8px';
+            // Update arrow position for above
+            tooltip.classList.remove('tooltip-below');
+            tooltip.classList.add('tooltip-above');
+        }
+        
+        if (horizontalAlign === 'center') {
+            tooltip.style.left = '50%';
+            tooltip.style.right = 'auto';
+            tooltip.style.transform = 'translateX(-50%)';
+        } else if (horizontalAlign === 'left') {
+            tooltip.style.left = '0';
+            tooltip.style.right = 'auto';
+            tooltip.style.transform = 'none';
+        } else {
+            tooltip.style.left = 'auto';
+            tooltip.style.right = '0';
+            tooltip.style.transform = 'none';
+        }
+    }
+</script>
 
 <jsp:include page="/WEB-INF/includes/footer.jsp"/>
