@@ -19,7 +19,6 @@
             <c:when test="${sessionScope.user.userType == 'TEACHER'}">
                 <li><a href="${pageContext.request.contextPath}/teacher/dashboard">Dashboard</a></li>
                 <li><a href="${pageContext.request.contextPath}/teacher/courses" class="active">My Courses</a></li>
-                <li><a href="${pageContext.request.contextPath}/teacher/students">My Students</a></li>
                 <li><a href="${pageContext.request.contextPath}/attendance">Attendance</a></li>
                 <li><a href="${pageContext.request.contextPath}/grades">Grades</a></li>
                 <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>

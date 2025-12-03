@@ -7,11 +7,11 @@
 <div class="sidebar">
     <ul class="sidebar-menu">
         <li><a href="${pageContext.request.contextPath}/student/dashboard">Dashboard</a></li>
-        <li><a href="${pageContext.request.contextPath}/student/available-courses">Available Courses</a></li>
-        <li><a href="${pageContext.request.contextPath}/student/my-courses">My Courses</a></li>
-        <li><a href="${pageContext.request.contextPath}/student/timetable">Timetable</a></li>
-        <li><a href="${pageContext.request.contextPath}/grades" class="active">My Grades & GPA</a></li>
+        <li><a href="${pageContext.request.contextPath}/student/courses">My Courses</a></li>
+        <li><a href="${pageContext.request.contextPath}/student/courses/available">Available Courses</a></li>
+        <li><a href="${pageContext.request.contextPath}/gpa/dashboard" class="active">My Grades & GPA</a></li>
         <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
+        <li><a href="${pageContext.request.contextPath}/student/timetable">Timetable</a></li>
     </ul>
 </div>
 

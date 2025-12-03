@@ -11,6 +11,7 @@
         <li><a href="${pageContext.request.contextPath}/admin/semesters/list">Manage Semesters</a></li>
         <li><a href="${pageContext.request.contextPath}/attendance" class="active">Attendance</a></li>
         <li><a href="${pageContext.request.contextPath}/grades">Grades</a></li>
+        <li><a href="${pageContext.request.contextPath}/gpa/admin/view">Student GPA</a></li>
         <li><a href="${pageContext.request.contextPath}/announcements">Announcements</a></li>
     </ul>
 </div>
