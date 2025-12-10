@@ -54,8 +54,7 @@
 
             <div class="form-group">
                 <label class="checkbox-label">
-                    <input type="checkbox" name="isImportant" value="true">
-                    <span>⚠️ Mark as Important</span>
+                    <input type="checkbox" name="isImportant" value="true">⚠️ Mark as Important
                 </label>
                 <small>Important announcements are highlighted and appear at the top</small>
             </div>
