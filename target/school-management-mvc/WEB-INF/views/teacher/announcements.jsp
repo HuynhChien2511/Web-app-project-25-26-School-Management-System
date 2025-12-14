@@ -65,17 +65,11 @@
                                 <span class="announcement-school">🏫 School-Wide</span>
                             </c:otherwise>
                         </c:choose>
-                        <%-- Hiển thị Delete button nếu người đăng nhập là tác giả của thông báo --%>
-                        <c:choose>
-                            <c:when test="${announcement.authorId == sessionScope.userId}">
-                                <button onclick="if(confirm('Delete this announcement?')) window.location.href='${pageContext.request.contextPath}/announcements/delete?id=${announcement.announcementId}'" 
-                                        class="btn btn-danger btn-sm">Delete</button>
-                            </c:when>
-                            <c:otherwise>
-                                <button disabled class="btn btn-danger btn-sm" style="opacity: 0.5; cursor: not-allowed;" 
-                                        title="You can only delete your own announcements">Delete</button>
-                            </c:otherwise>
-                        </c:choose>
+                        <%-- Chỉ hiển thị Delete button nếu người đăng nhập là tác giả của thông báo --%>
+                        <c:if test="${announcement.authorId == sessionScope.userId}">
+                            <button onclick="if(confirm('Delete this announcement?')) window.location.href='${pageContext.request.contextPath}/announcements/delete?id=${announcement.announcementId}'" 
+                                    class="btn btn-danger btn-sm">Delete</button>
+                        </c:if>
                     </div>
                 </div>
                 
