@@ -29,7 +29,13 @@
     <c:if test="${param.success == 'deleted'}">
         <div class="alert alert-success">✅ Announcement deleted successfully!</div>
     </c:if>
-    <c:if test="${param.error != null}">
+    <c:if test="${param.error == 'unauthorized'}">
+        <div class="alert alert-error">❌ You do not have the authority. Cannot delete this announcement.</div>
+    </c:if>
+    <c:if test="${param.error == 'deletefailed'}">
+        <div class="alert alert-error">❌ Failed to delete announcement. Please try again.</div>
+    </c:if>
+    <c:if test="${param.error != null && param.error != 'unauthorized' && param.error != 'deletefailed'}">
         <div class="alert alert-error">❌ An error occurred. Please try again.</div>
     </c:if>
 
@@ -59,8 +65,17 @@
                                 <span class="announcement-school">🏫 School-Wide</span>
                             </c:otherwise>
                         </c:choose>
-                        <button onclick="if(confirm('Delete this announcement?')) window.location.href='${pageContext.request.contextPath}/announcements/delete?id=${announcement.announcementId}'" 
-                                class="btn btn-danger btn-sm">Delete</button>
+                        <%-- Hiển thị Delete button nếu người đăng nhập là tác giả của thông báo --%>
+                        <c:choose>
+                            <c:when test="${announcement.authorId == sessionScope.userId}">
+                                <button onclick="if(confirm('Delete this announcement?')) window.location.href='${pageContext.request.contextPath}/announcements/delete?id=${announcement.announcementId}'" 
+                                        class="btn btn-danger btn-sm">Delete</button>
+                            </c:when>
+                            <c:otherwise>
+                                <button disabled class="btn btn-danger btn-sm" style="opacity: 0.5; cursor: not-allowed;" 
+                                        title="You can only delete your own announcements">Delete</button>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
                 

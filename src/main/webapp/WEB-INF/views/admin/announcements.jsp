@@ -29,10 +29,10 @@
         <div class="alert alert-success">✅ Announcement deleted successfully!</div>
     </c:if>
     <c:if test="${param.error == 'unauthorized'}">
-        <div class="alert alert-error">❌ You don't have permission to perform this action.</div>
+        <div class="alert alert-error">❌ You do not have the authority. Cannot delete this announcement.</div>
     </c:if>
     <c:if test="${param.error == 'deletefailed'}">
-        <div class="alert alert-error">❌ Failed to delete announcement.</div>
+        <div class="alert alert-error">❌ Failed to delete announcement. Please try again.</div>
     </c:if>
 
     <div class="announcements-container">

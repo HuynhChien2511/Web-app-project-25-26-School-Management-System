@@ -8,6 +8,7 @@ public class Announcement {
     private String content;
     private int authorId;
     private String authorName;
+    private String authorType; // To store user_type of the author (ADMIN, TEACHER, STUDENT)
     private Integer courseId; // Nullable for school-wide announcements
     private String courseName;
     private String courseCode;
@@ -68,6 +69,14 @@ public class Announcement {
 
     public void setAuthorName(String authorName) {
         this.authorName = authorName;
+    }
+
+    public String getAuthorType() {
+        return authorType;
+    }
+
+    public void setAuthorType(String authorType) {
+        this.authorType = authorType;
     }
 
     public Integer getCourseId() {

@@ -16,7 +16,7 @@ public class AnnouncementDAO {
     // Get all school-wide announcements
     public List<Announcement> getSchoolWideAnnouncements() {
         List<Announcement> announcements = new ArrayList<>();
-        String sql = "SELECT a.*, u.full_name as author_name " +
+        String sql = "SELECT a.*, u.full_name as author_name, u.user_type " +
                      "FROM announcements a " +
                      "JOIN users u ON a.author_id = u.user_id " +
                      "WHERE a.course_id IS NULL " +
@@ -38,7 +38,7 @@ public class AnnouncementDAO {
     // Get announcements for a specific course
     public List<Announcement> getCourseAnnouncements(int courseId) {
         List<Announcement> announcements = new ArrayList<>();
-        String sql = "SELECT a.*, u.full_name as author_name, c.course_name, c.course_code " +
+        String sql = "SELECT a.*, u.full_name as author_name, u.user_type, c.course_name, c.course_code " +
                      "FROM announcements a " +
                      "JOIN users u ON a.author_id = u.user_id " +
                      "JOIN courses c ON a.course_id = c.course_id " +
@@ -63,7 +63,7 @@ public class AnnouncementDAO {
     // Get all announcements for a student (school-wide + their enrolled courses)
     public List<Announcement> getAnnouncementsForStudent(int studentId) {
         List<Announcement> announcements = new ArrayList<>();
-        String sql = "SELECT a.*, u.full_name as author_name, c.course_name, c.course_code " +
+        String sql = "SELECT a.*, u.full_name as author_name, u.user_type, c.course_name, c.course_code " +
                      "FROM announcements a " +
                      "JOIN users u ON a.author_id = u.user_id " +
                      "LEFT JOIN courses c ON a.course_id = c.course_id " +
@@ -89,7 +89,7 @@ public class AnnouncementDAO {
     // Get announcements created by a specific teacher
     public List<Announcement> getAnnouncementsByTeacher(int teacherId) {
         List<Announcement> announcements = new ArrayList<>();
-        String sql = "SELECT a.*, u.full_name as author_name, c.course_name, c.course_code " +
+        String sql = "SELECT a.*, u.full_name as author_name, u.user_type, c.course_name, c.course_code " +
                      "FROM announcements a " +
                      "JOIN users u ON a.author_id = u.user_id " +
                      "LEFT JOIN courses c ON a.course_id = c.course_id " +
@@ -114,7 +114,7 @@ public class AnnouncementDAO {
     // Get all announcements (for admin)
     public List<Announcement> getAllAnnouncements() {
         List<Announcement> announcements = new ArrayList<>();
-        String sql = "SELECT a.*, u.full_name as author_name, c.course_name, c.course_code " +
+        String sql = "SELECT a.*, u.full_name as author_name, u.user_type, c.course_name, c.course_code " +
                      "FROM announcements a " +
                      "JOIN users u ON a.author_id = u.user_id " +
                      "LEFT JOIN courses c ON a.course_id = c.course_id " +
@@ -135,7 +135,7 @@ public class AnnouncementDAO {
 
     // Get announcement by ID
     public Announcement getAnnouncementById(int announcementId) {
-        String sql = "SELECT a.*, u.full_name as author_name, c.course_name, c.course_code " +
+        String sql = "SELECT a.*, u.full_name as author_name, u.user_type, c.course_name, c.course_code " +
                      "FROM announcements a " +
                      "JOIN users u ON a.author_id = u.user_id " +
                      "LEFT JOIN courses c ON a.course_id = c.course_id " +
@@ -224,6 +224,7 @@ public class AnnouncementDAO {
         announcement.setContent(rs.getString("content"));
         announcement.setAuthorId(rs.getInt("author_id"));
         announcement.setAuthorName(rs.getString("author_name"));
+        announcement.setAuthorType(rs.getString("user_type"));
         
         // Handle nullable course_id
         int courseId = rs.getInt("course_id");

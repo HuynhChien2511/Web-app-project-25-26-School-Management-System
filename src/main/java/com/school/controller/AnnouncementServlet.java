@@ -175,7 +175,6 @@ public class AnnouncementServlet extends HttpServlet {
     private void deleteAnnouncement(HttpServletRequest request, HttpServletResponse response, User user)
             throws ServletException, IOException {
         
-        // Only admins and announcement authors can delete
         int announcementId = Integer.parseInt(request.getParameter("id"));
         Announcement announcement = announcementDAO.getAnnouncementById(announcementId);
         
@@ -184,9 +183,20 @@ public class AnnouncementServlet extends HttpServlet {
             return;
         }
         
-        // Check permissions
-        boolean canDelete = user.getUserType() == User.UserType.ADMIN || 
-                           announcement.getAuthorId() == user.getUserId();
+        // Check permissions with enhanced security
+        boolean canDelete = false;
+        
+        if (user.getUserType() == User.UserType.ADMIN) {
+            // Admin can delete any announcement
+            canDelete = true;
+        } else if ("ADMIN".equals(announcement.getAuthorType())) {
+            // Only admin can delete admin's announcements
+            // Teachers and students cannot delete admin announcements
+            canDelete = false;
+        } else if (announcement.getAuthorId() == user.getUserId()) {
+            // Users can delete their own announcements (non-admin only)
+            canDelete = true;
+        }
         
         if (!canDelete) {
             response.sendRedirect(request.getContextPath() + "/announcements/list?error=unauthorized");
