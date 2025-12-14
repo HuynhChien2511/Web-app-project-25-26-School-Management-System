@@ -139,6 +139,7 @@
             padding: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            overflow-x: auto;
         }
         
         .btn {
@@ -183,6 +184,7 @@
         
         .table {
             width: 100%;
+            min-width: 600px;
             border-collapse: collapse;
             margin-top: 20px;
         }
@@ -297,6 +299,52 @@
         .badge-dropped {
             background: #f8d7da;
             color: #721c24;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .main-content {
+                margin-left: 200px;
+                padding: 20px 15px;
+            }
+            
+            .navbar-brand {
+                font-size: 18px;
+            }
+            
+            .navbar-user span {
+                display: none;
+            }
+            
+            .table th,
+            .table td {
+                padding: 8px;
+                font-size: 13px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 15px 10px;
+            }
+            
+            .btn-change-password {
+                display: none;
+            }
         }
     </style>
 </head>
