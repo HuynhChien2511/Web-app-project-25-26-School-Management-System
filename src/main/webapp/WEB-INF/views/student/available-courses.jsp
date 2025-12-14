@@ -32,7 +32,7 @@
         <div class="alert alert-error">⚠️ Schedule Conflict! This course overlaps with another course you are already enrolled in. Please check your timetable.</div>
     </c:if>
     
-    <div class="card">\n        <table class="table">
+    <div class="card"><table class="table">
             <thead>
                 <tr>
                     <th>Course Code</th>

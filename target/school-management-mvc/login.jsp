@@ -15,7 +15,8 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%),
+                        url('${pageContext.request.contextPath}/images/background_img.png') center/cover no-repeat;
             min-height: 100vh;
             display: flex;
             justify-content: center;

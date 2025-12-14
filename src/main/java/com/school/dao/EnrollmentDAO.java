@@ -90,16 +90,37 @@ public class EnrollmentDAO {
     }
 
     public boolean enrollStudent(int studentId, int courseId) {
-        String sql = "INSERT INTO enrollments (student_id, course_id, semester_id, status) " +
-                     "SELECT ?, ?, semester_id, 'ACTIVE' FROM semesters WHERE is_active = TRUE LIMIT 1";
+        // First check if there's an existing dropped enrollment
+        String checkSql = "SELECT enrollment_id FROM enrollments " +
+                         "WHERE student_id = ? AND course_id = ? " +
+                         "AND semester_id = (SELECT semester_id FROM semesters WHERE is_active = TRUE LIMIT 1)";
         
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             
-            stmt.setInt(1, studentId);
-            stmt.setInt(2, courseId);
+            checkStmt.setInt(1, studentId);
+            checkStmt.setInt(2, courseId);
+            ResultSet rs = checkStmt.executeQuery();
             
-            return stmt.executeUpdate() > 0;
+            if (rs.next()) {
+                // If enrollment exists (dropped), update it to ACTIVE
+                int enrollmentId = rs.getInt("enrollment_id");
+                String updateSql = "UPDATE enrollments SET status = 'ACTIVE', enrollment_date = CURRENT_TIMESTAMP " +
+                                  "WHERE enrollment_id = ?";
+                try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                    updateStmt.setInt(1, enrollmentId);
+                    return updateStmt.executeUpdate() > 0;
+                }
+            } else {
+                // If no enrollment exists, insert new one
+                String insertSql = "INSERT INTO enrollments (student_id, course_id, semester_id, status) " +
+                                  "SELECT ?, ?, semester_id, 'ACTIVE' FROM semesters WHERE is_active = TRUE LIMIT 1";
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    insertStmt.setInt(1, studentId);
+                    insertStmt.setInt(2, courseId);
+                    return insertStmt.executeUpdate() > 0;
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
