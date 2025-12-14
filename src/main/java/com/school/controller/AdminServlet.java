@@ -102,8 +102,28 @@ public class AdminServlet extends HttpServlet {
 
     private void listUsers(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<User> users = userDAO.getAllUsers();
+        // Pagination support
+        int page = 1;
+        int pageSize = 10;
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        List<User> users = userDAO.getUsersWithPagination(page, pageSize);
+        int totalUsers = userDAO.getTotalUserCount();
+        int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
+        
         request.setAttribute("users", users);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         request.getRequestDispatcher("/WEB-INF/views/admin/users.jsp").forward(request, response);
     }
 
@@ -171,8 +191,28 @@ public class AdminServlet extends HttpServlet {
 
     private void listCourses(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Course> courses = courseDAO.getAllCourses();
+        // Pagination support
+        int page = 1;
+        int pageSize = 10;
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        List<Course> courses = courseDAO.getCoursesWithPagination(page, pageSize);
+        int totalCourses = courseDAO.getTotalCourseCount();
+        int totalPages = (int) Math.ceil((double) totalCourses / pageSize);
+        
         request.setAttribute("courses", courses);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         request.getRequestDispatcher("/WEB-INF/views/admin/courses.jsp").forward(request, response);
     }
 

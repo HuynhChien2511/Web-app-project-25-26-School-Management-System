@@ -88,11 +88,30 @@ public class ForumServlet extends HttpServlet {
             return;
         }
         
+        // Pagination support
+        int page = 1;
+        int pageSize = 10;
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
         Course course = courseDAO.getCourseById(courseId);
-        List<ForumPost> posts = forumDAO.getTopLevelPostsByCourse(courseId);
+        List<ForumPost> posts = forumDAO.getTopLevelPostsByCourseWithPagination(courseId, page, pageSize);
+        int totalPosts = forumDAO.getTotalTopLevelPostCountByCourse(courseId);
+        int totalPages = (int) Math.ceil((double) totalPosts / pageSize);
         
         request.setAttribute("course", course);
         request.setAttribute("posts", posts);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         
         String viewPath = getViewPath("forum");
         request.getRequestDispatcher(viewPath).forward(request, response);

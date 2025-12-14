@@ -105,8 +105,24 @@ public class GpaServlet extends HttpServlet {
         // Get latest GPA record for summary
         GpaRecord latestGpa = gpaRecordDAO.getLatestGpaRecord(studentId);
         
-        // Get all enrollments with grades
-        List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByStudent(studentId);
+        // Pagination for enrollments
+        int page = 1;
+        int pageSize = 5;
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        // Get enrollments with pagination
+        List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByStudentWithPagination(studentId, page, pageSize);
+        int totalEnrollments = enrollmentDAO.getTotalEnrollmentCountByStudent(studentId);
+        int totalPages = (int) Math.ceil((double) totalEnrollments / pageSize);
         
         // Get all semesters
         List<Semester> semesters = semesterDAO.getAllSemesters();
@@ -116,6 +132,9 @@ public class GpaServlet extends HttpServlet {
         request.setAttribute("latestGpa", latestGpa);
         request.setAttribute("enrollments", enrollments);
         request.setAttribute("semesters", semesters);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         
         if (user.getUserType() == User.UserType.STUDENT) {
             request.getRequestDispatcher("/WEB-INF/views/student/gpa-dashboard.jsp").forward(request, response);

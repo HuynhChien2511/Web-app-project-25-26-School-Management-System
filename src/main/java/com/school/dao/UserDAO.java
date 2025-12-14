@@ -68,6 +68,43 @@ public class UserDAO {
         return users;
     }
 
+    public List<User> getUsersWithPagination(int page, int pageSize) {
+        List<User> users = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+        String sql = "SELECT * FROM users ORDER BY user_type, full_name LIMIT ? OFFSET ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, pageSize);
+            stmt.setInt(2, offset);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                users.add(extractUserFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    public int getTotalUserCount() {
+        String sql = "SELECT COUNT(*) FROM users";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public List<User> getUsersByType(User.UserType userType) {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM users WHERE user_type = ? ORDER BY full_name";

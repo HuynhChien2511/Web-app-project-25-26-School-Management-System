@@ -30,6 +30,44 @@ public class SemesterDAO {
         return semesters;
     }
 
+    public List<Semester> getSemestersWithPagination(int page, int pageSize) {
+        List<Semester> semesters = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+        // Sort by: ACTIVE status first (DESC), then by start_date DESC
+        String sql = "SELECT * FROM semesters ORDER BY is_active DESC, start_date DESC LIMIT ? OFFSET ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, pageSize);
+            stmt.setInt(2, offset);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                semesters.add(extractSemesterFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return semesters;
+    }
+
+    public int getTotalSemesterCount() {
+        String sql = "SELECT COUNT(*) FROM semesters";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public List<Semester> getSemestersByAcademicYear(String academicYear) {
         List<Semester> semesters = new ArrayList<>();
         String sql = "SELECT * FROM semesters WHERE academic_year = ? ORDER BY semester_type";

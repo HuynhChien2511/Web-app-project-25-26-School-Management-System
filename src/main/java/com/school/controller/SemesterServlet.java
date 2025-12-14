@@ -98,8 +98,28 @@ public class SemesterServlet extends HttpServlet {
 
     private void listSemesters(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Semester> semesters = semesterDAO.getAllSemesters();
+        // Pagination support
+        int page = 1;
+        int pageSize = 10;
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        List<Semester> semesters = semesterDAO.getSemestersWithPagination(page, pageSize);
+        int totalSemesters = semesterDAO.getTotalSemesterCount();
+        int totalPages = (int) Math.ceil((double) totalSemesters / pageSize);
+        
         request.setAttribute("semesters", semesters);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         request.getRequestDispatcher("/WEB-INF/views/admin/semesters.jsp").forward(request, response);
     }
 

@@ -97,8 +97,26 @@ public class AttendanceServlet extends HttpServlet {
 
     private void showAllCourses(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Course> courses = courseDAO.getAllCourses();
+        // Pagination parameters
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        int pageSize = 9;
+        List<Course> courses = courseDAO.getCoursesWithPagination(page, pageSize);
+        int totalCourses = courseDAO.getTotalCourseCount();
+        int totalPages = (int) Math.ceil((double) totalCourses / pageSize);
+        
         request.setAttribute("courses", courses);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         request.getRequestDispatcher("/WEB-INF/views/admin/attendance-courses.jsp").forward(request, response);
     }
 

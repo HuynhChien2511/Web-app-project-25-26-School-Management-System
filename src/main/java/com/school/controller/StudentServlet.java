@@ -74,14 +74,34 @@ public class StudentServlet extends HttpServlet {
     private void showDashboard(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         User student = SessionValidator.getLoggedInUser(request);
-        List<Enrollment> myEnrollments = enrollmentDAO.getEnrollmentsByStudent(student.getUserId());
         
-        long activeEnrollments = myEnrollments.stream()
+        // Pagination support
+        int page = 1;
+        int pageSize = 5;
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        List<Enrollment> myEnrollments = enrollmentDAO.getEnrollmentsByStudentWithPagination(student.getUserId(), page, pageSize);
+        int totalEnrollments = enrollmentDAO.getTotalEnrollmentCountByStudent(student.getUserId());
+        int totalPages = (int) Math.ceil((double) totalEnrollments / pageSize);
+        
+        long activeEnrollments = enrollmentDAO.getEnrollmentsByStudent(student.getUserId()).stream()
                 .filter(e -> e.getStatus() == Enrollment.EnrollmentStatus.ACTIVE)
                 .count();
         
         request.setAttribute("enrollments", myEnrollments);
         request.setAttribute("totalEnrollments", activeEnrollments);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         
         request.getRequestDispatcher("/WEB-INF/views/student/dashboard.jsp").forward(request, response);
     }
@@ -89,16 +109,53 @@ public class StudentServlet extends HttpServlet {
     private void viewMyCourses(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         User student = SessionValidator.getLoggedInUser(request);
-        List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByStudent(student.getUserId());
+        
+        // Pagination support
+        int page = 1;
+        int pageSize = 5;
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByStudentWithPagination(student.getUserId(), page, pageSize);
+        int totalEnrollments = enrollmentDAO.getTotalEnrollmentCountByStudent(student.getUserId());
+        int totalPages = (int) Math.ceil((double) totalEnrollments / pageSize);
         
         request.setAttribute("enrollments", enrollments);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         request.getRequestDispatcher("/WEB-INF/views/student/my-courses.jsp").forward(request, response);
     }
 
     private void viewAvailableCourses(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         User student = SessionValidator.getLoggedInUser(request);
-        List<Course> allCourses = courseDAO.getAllCourses();
+        
+        // Pagination support
+        int page = 1;
+        int pageSize = 10;
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        List<Course> allCourses = courseDAO.getCoursesWithPagination(page, pageSize);
+        int totalCourses = courseDAO.getTotalCourseCount();
+        int totalPages = (int) Math.ceil((double) totalCourses / pageSize);
         
         // Mark courses the student is already enrolled in
         for (Course course : allCourses) {
@@ -108,6 +165,9 @@ public class StudentServlet extends HttpServlet {
         
         request.setAttribute("courses", allCourses);
         request.setAttribute("studentId", student.getUserId());
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         request.getRequestDispatcher("/WEB-INF/views/student/available-courses.jsp").forward(request, response);
     }
 

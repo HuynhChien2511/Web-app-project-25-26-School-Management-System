@@ -39,6 +39,55 @@ public class ForumDAO {
         return posts;
     }
 
+    // Get top-level posts for a course with pagination
+    public List<ForumPost> getTopLevelPostsByCourseWithPagination(int courseId, int page, int pageSize) {
+        List<ForumPost> posts = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+        String sql = "SELECT fp.*, u.full_name as author_name, u.user_type as author_type, " +
+                     "c.course_code, c.course_name, " +
+                     "(SELECT COUNT(*) FROM forum_posts WHERE parent_post_id = fp.post_id) as reply_count " +
+                     "FROM forum_posts fp " +
+                     "JOIN users u ON fp.author_id = u.user_id " +
+                     "JOIN courses c ON fp.course_id = c.course_id " +
+                     "WHERE fp.course_id = ? AND fp.parent_post_id IS NULL " +
+                     "ORDER BY fp.created_at DESC LIMIT ? OFFSET ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, courseId);
+            stmt.setInt(2, pageSize);
+            stmt.setInt(3, offset);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                posts.add(extractForumPostFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return posts;
+    }
+
+    // Get total count of top-level posts for a course
+    public int getTotalTopLevelPostCountByCourse(int courseId) {
+        String sql = "SELECT COUNT(*) FROM forum_posts WHERE course_id = ? AND parent_post_id IS NULL";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, courseId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     // Get all replies for a specific post
     public List<ForumPost> getRepliesByPostId(int postId) {
         List<ForumPost> replies = new ArrayList<>();

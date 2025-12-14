@@ -105,6 +105,30 @@
                 </a>
             </c:forEach>
         </div>
+        
+        <!-- Pagination Controls -->
+        <c:if test="${totalPages > 1}">
+            <div class="pagination">
+                <c:if test="${currentPage > 1}">
+                    <a href="${pageContext.request.contextPath}/forum/course?courseId=${course.courseId}&page=${currentPage - 1}" class="page-link">&laquo; Previous</a>
+                </c:if>
+                
+                <c:forEach begin="1" end="${totalPages}" var="i">
+                    <c:choose>
+                        <c:when test="${currentPage == i}">
+                            <span class="page-link active">${i}</span>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/forum/course?courseId=${course.courseId}&page=${i}" class="page-link">${i}</a>
+                        </c:otherwise>
+                    </c:choose>
+                </c:forEach>
+                
+                <c:if test="${currentPage < totalPages}">
+                    <a href="${pageContext.request.contextPath}/forum/course?courseId=${course.courseId}&page=${currentPage + 1}" class="page-link">Next &raquo;</a>
+                </c:if>
+            </div>
+        </c:if>
     </div>
 </div>
 
@@ -210,6 +234,39 @@
         color: #999;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+    }
+    
+    /* Pagination Styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        margin-top: 30px;
+        padding: 20px 0;
+    }
+    
+    .page-link {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        background: white;
+        color: #667eea;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    
+    .page-link:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .page-link.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        font-weight: bold;
     }
 </style>
 

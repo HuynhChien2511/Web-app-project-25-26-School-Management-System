@@ -40,6 +40,54 @@ public class EnrollmentDAO {
         return enrollments;
     }
 
+    public List<Enrollment> getEnrollmentsByStudentWithPagination(int studentId, int page, int pageSize) {
+        List<Enrollment> enrollments = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+        String sql = "SELECT e.*, c.course_name, c.course_code, c.credits, c.max_students, " +
+                     "c.schedule_days, c.schedule_time, c.room_number, " +
+                     "u.full_name as teacher_name, s.semester_name " +
+                     "FROM enrollments e " +
+                     "JOIN courses c ON e.course_id = c.course_id " +
+                     "LEFT JOIN users u ON c.teacher_id = u.user_id " +
+                     "LEFT JOIN semesters s ON e.semester_id = s.semester_id " +
+                     "WHERE e.student_id = ? " +
+                     "ORDER BY e.enrollment_date DESC LIMIT ? OFFSET ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, pageSize);
+            stmt.setInt(3, offset);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                enrollments.add(extractEnrollmentFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return enrollments;
+    }
+
+    public int getTotalEnrollmentCountByStudent(int studentId) {
+        String sql = "SELECT COUNT(*) FROM enrollments WHERE student_id = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, studentId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public List<Enrollment> getEnrollmentsByCourse(int courseId) {
         List<Enrollment> enrollments = new ArrayList<>();
         String sql = "SELECT e.*, u.full_name as student_name, u.email, c.course_name, c.course_code, s.semester_name " +

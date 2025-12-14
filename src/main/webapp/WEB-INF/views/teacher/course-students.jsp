@@ -27,7 +27,7 @@
     </c:if>
     
     <div class="card">
-        <h3>Enrolled Students (${enrollments.size()}/${course.maxStudents})</h3>
+        <h3>Enrolled Students (${totalEnrollments}/${course.maxStudents})</h3>
         <table class="table">
             <thead>
                 <tr>
@@ -79,6 +79,31 @@
                 </c:if>
             </tbody>
         </table>
+        
+        <!-- Pagination Controls -->
+        <c:if test="${totalPages > 1}">
+            <div class="pagination">
+                <c:if test="${currentPage > 1}">
+                    <a href="${pageContext.request.contextPath}/teacher/courses/students?courseId=${course.courseId}&page=${currentPage - 1}" class="page-link">« Previous</a>
+                </c:if>
+                
+                <c:forEach begin="1" end="${totalPages}" var="i">
+                    <c:choose>
+                        <c:when test="${currentPage eq i}">
+                            <span class="page-link active">${i}</span>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/teacher/courses/students?courseId=${course.courseId}&page=${i}" class="page-link">${i}</a>
+                        </c:otherwise>
+                    </c:choose>
+                </c:forEach>
+                
+                <c:if test="${currentPage < totalPages}">
+                    <a href="${pageContext.request.contextPath}/teacher/courses/students?courseId=${course.courseId}&page=${currentPage + 1}" class="page-link">Next »</a>
+                </c:if>
+            </div>
+        </c:if>
+        
         <div style="margin-top: 20px;">
             <a href="${pageContext.request.contextPath}/teacher/courses" class="btn btn-primary">Back to My Courses</a>
         </div>
@@ -90,6 +115,36 @@
         padding: 5px 10px;
         font-size: 12px;
     }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        gap: 5px;
+    }
+    
+    .page-link {
+        padding: 8px 12px;
+        text-decoration: none;
+        color: #667eea;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+    
+    .page-link:hover {
+        background-color: #667eea;
+        color: white;
+    }
+    
+    .page-link.active {
+        background-color: #667eea;
+        color: white;
+        border-color: #667eea;
+        pointer-events: none;
+    }
+
 </style>
 
 <jsp:include page="/WEB-INF/includes/footer.jsp"/>

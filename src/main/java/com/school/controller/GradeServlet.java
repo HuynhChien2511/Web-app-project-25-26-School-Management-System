@@ -109,8 +109,28 @@ public class GradeServlet extends HttpServlet {
 
     private void showAllCourses(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Course> courses = courseDAO.getAllCourses();
+        // Pagination support
+        int page = 1;
+        int pageSize = 9;
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        List<Course> courses = courseDAO.getCoursesWithPagination(page, pageSize);
+        int totalCourses = courseDAO.getTotalCourseCount();
+        int totalPages = (int) Math.ceil((double) totalCourses / pageSize);
+        
         request.setAttribute("courses", courses);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         request.getRequestDispatcher("/WEB-INF/views/admin/grade-courses.jsp").forward(request, response);
     }
 

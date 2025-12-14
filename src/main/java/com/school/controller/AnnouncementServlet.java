@@ -69,20 +69,48 @@ public class AnnouncementServlet extends HttpServlet {
 
     private void listAnnouncements(HttpServletRequest request, HttpServletResponse response, User user)
             throws ServletException, IOException {
-        List<Announcement> announcements;
+        // Pagination support
+        int page = 1;
+        int pageSize = 10;
         
-        if (user.getUserType() == User.UserType.ADMIN) {
-            announcements = announcementDAO.getAllAnnouncements();
-        } else if (user.getUserType() == User.UserType.TEACHER) {
-            // Teachers see school-wide announcements + their own course announcements
-            announcements = announcementDAO.getSchoolWideAnnouncements();
-            announcements.addAll(announcementDAO.getAnnouncementsByTeacher(user.getUserId()));
-        } else {
-            // Students see school-wide announcements + announcements from enrolled courses
-            announcements = announcementDAO.getAnnouncementsForStudent(user.getUserId());
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
         }
         
+        List<Announcement> announcements;
+        int totalAnnouncements;
+        
+        if (user.getUserType() == User.UserType.ADMIN) {
+            announcements = announcementDAO.getAllAnnouncementsWithPagination(page, pageSize);
+            totalAnnouncements = announcementDAO.getTotalAnnouncementCount();
+        } else if (user.getUserType() == User.UserType.TEACHER) {
+            // For teachers, get school-wide + their own announcements with pagination
+            List<Announcement> allTeacherAnnouncements = announcementDAO.getSchoolWideAnnouncements();
+            allTeacherAnnouncements.addAll(announcementDAO.getAnnouncementsByTeacher(user.getUserId()));
+            totalAnnouncements = allTeacherAnnouncements.size();
+            
+            // Manual pagination for teacher announcements
+            int startIndex = (page - 1) * pageSize;
+            int endIndex = Math.min(startIndex + pageSize, totalAnnouncements);
+            announcements = totalAnnouncements > 0 ? allTeacherAnnouncements.subList(startIndex, endIndex) : allTeacherAnnouncements;
+        } else {
+            // Students see school-wide announcements + announcements from enrolled courses
+            announcements = announcementDAO.getAnnouncementsForStudentWithPagination(user.getUserId(), page, pageSize);
+            totalAnnouncements = announcementDAO.getTotalAnnouncementCountForStudent(user.getUserId());
+        }
+        
+        int totalPages = (int) Math.ceil((double) totalAnnouncements / pageSize);
+        
         request.setAttribute("announcements", announcements);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         
         String viewPath;
         if (user.getUserType() == User.UserType.ADMIN) {

@@ -86,6 +86,56 @@ public class AnnouncementDAO {
         return announcements;
     }
 
+    // Get all announcements for a student with pagination
+    public List<Announcement> getAnnouncementsForStudentWithPagination(int studentId, int page, int pageSize) {
+        List<Announcement> announcements = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+        String sql = "SELECT a.*, u.full_name as author_name, u.user_type, c.course_name, c.course_code " +
+                     "FROM announcements a " +
+                     "JOIN users u ON a.author_id = u.user_id " +
+                     "LEFT JOIN courses c ON a.course_id = c.course_id " +
+                     "WHERE a.course_id IS NULL " +
+                     "   OR a.course_id IN (SELECT course_id FROM enrollments WHERE student_id = ? AND status = 'ACTIVE') " +
+                     "ORDER BY a.is_important DESC, a.created_at DESC LIMIT ? OFFSET ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, pageSize);
+            stmt.setInt(3, offset);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                announcements.add(extractAnnouncementFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return announcements;
+    }
+
+    // Get total count of announcements for a student
+    public int getTotalAnnouncementCountForStudent(int studentId) {
+        String sql = "SELECT COUNT(*) FROM announcements a " +
+                     "WHERE a.course_id IS NULL " +
+                     "   OR a.course_id IN (SELECT course_id FROM enrollments WHERE student_id = ? AND status = 'ACTIVE')";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, studentId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     // Get announcements created by a specific teacher
     public List<Announcement> getAnnouncementsByTeacher(int teacherId) {
         List<Announcement> announcements = new ArrayList<>();
@@ -131,6 +181,49 @@ public class AnnouncementDAO {
             e.printStackTrace();
         }
         return announcements;
+    }
+
+    // Get all announcements with pagination (for admin)
+    public List<Announcement> getAllAnnouncementsWithPagination(int page, int pageSize) {
+        List<Announcement> announcements = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+        String sql = "SELECT a.*, u.full_name as author_name, u.user_type, c.course_name, c.course_code " +
+                     "FROM announcements a " +
+                     "JOIN users u ON a.author_id = u.user_id " +
+                     "LEFT JOIN courses c ON a.course_id = c.course_id " +
+                     "ORDER BY a.is_important DESC, a.created_at DESC LIMIT ? OFFSET ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, pageSize);
+            stmt.setInt(2, offset);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                announcements.add(extractAnnouncementFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return announcements;
+    }
+
+    // Get total count of all announcements
+    public int getTotalAnnouncementCount() {
+        String sql = "SELECT COUNT(*) FROM announcements";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     // Get announcement by ID

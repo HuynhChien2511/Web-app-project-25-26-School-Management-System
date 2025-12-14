@@ -79,9 +79,34 @@ public class TeacherServlet extends HttpServlet {
             totalStudents += course.getEnrolledCount();
         }
         
-        request.setAttribute("myCourses", myCourses);
-        request.setAttribute("totalCourses", myCourses.size());
+        // Pagination support
+        int page = 1;
+        int pageSize = 5;
+        int totalCourses = myCourses.size();
+        int totalPages = (int) Math.ceil((double) totalCourses / pageSize);
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+                if (page > totalPages && totalPages > 0) page = totalPages;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        // Get paginated subset
+        int startIndex = (page - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, totalCourses);
+        List<Course> paginatedCourses = totalCourses > 0 ? myCourses.subList(startIndex, endIndex) : myCourses;
+        
+        request.setAttribute("myCourses", paginatedCourses);
+        request.setAttribute("totalCourses", totalCourses);
         request.setAttribute("totalStudents", totalStudents);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         
         request.getRequestDispatcher("/WEB-INF/views/teacher/dashboard.jsp").forward(request, response);
     }
@@ -91,7 +116,32 @@ public class TeacherServlet extends HttpServlet {
         User teacher = SessionValidator.getLoggedInUser(request);
         List<Course> myCourses = courseDAO.getCoursesByTeacher(teacher.getUserId());
         
-        request.setAttribute("courses", myCourses);
+        // Pagination support
+        int page = 1;
+        int pageSize = 5;
+        int totalCourses = myCourses.size();
+        int totalPages = (int) Math.ceil((double) totalCourses / pageSize);
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+                if (page > totalPages && totalPages > 0) page = totalPages;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        // Get paginated subset
+        int startIndex = (page - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, totalCourses);
+        List<Course> paginatedCourses = totalCourses > 0 ? myCourses.subList(startIndex, endIndex) : myCourses;
+        
+        request.setAttribute("courses", paginatedCourses);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         request.getRequestDispatcher("/WEB-INF/views/teacher/courses.jsp").forward(request, response);
     }
 
@@ -108,10 +158,36 @@ public class TeacherServlet extends HttpServlet {
             return;
         }
         
-        List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByCourse(courseId);
+        List<Enrollment> allEnrollments = enrollmentDAO.getEnrollmentsByCourse(courseId);
+        
+        // Pagination support
+        int page = 1;
+        int pageSize = 5;
+        int totalEnrollments = allEnrollments.size();
+        int totalPages = (int) Math.ceil((double) totalEnrollments / pageSize);
+        
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+                if (page > totalPages && totalPages > 0) page = totalPages;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        // Get paginated subset
+        int startIndex = (page - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, totalEnrollments);
+        List<Enrollment> paginatedEnrollments = totalEnrollments > 0 ? allEnrollments.subList(startIndex, endIndex) : allEnrollments;
         
         request.setAttribute("course", course);
-        request.setAttribute("enrollments", enrollments);
+        request.setAttribute("enrollments", paginatedEnrollments);
+        request.setAttribute("totalEnrollments", totalEnrollments);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
         request.getRequestDispatcher("/WEB-INF/views/teacher/course-students.jsp").forward(request, response);
     }
 
