@@ -52,9 +52,10 @@
                           placeholder="Enter announcement message" required></textarea>
             </div>
 
-            <div class="form-group">
+            <div class="form-group checkbox-group">
                 <label class="checkbox-label">
-                    <input type="checkbox" name="isImportant" value="true">⚠️ Mark as Important
+                    <span>⚠️ Mark as Important</span>
+                    <input type="checkbox" name="isImportant" value="true">
                 </label>
                 <small>Important announcements are highlighted and appear at the top</small>
             </div>
@@ -72,7 +73,7 @@
         margin-bottom: 20px;
     }
     
-    .form-group label {
+    .form-group label:not(.checkbox-label) {
         display: block;
         font-weight: 600;
         margin-bottom: 8px;
@@ -105,20 +106,31 @@
         font-size: 13px;
     }
     
-    .checkbox-label {
+    .checkbox-group {
         display: flex;
+        flex-direction: column;
+    }
+    
+    .checkbox-label {
+        display: flex !important;
         align-items: center;
-        gap: 8px;
+        justify-content: space-between;
         cursor: pointer;
+        font-weight: normal !important;
+        width: 100%;
+        margin-bottom: 0 !important;
     }
     
     .checkbox-label input[type="checkbox"] {
         margin: 0;
         cursor: pointer;
+        width: 18px;
+        height: 18px;
     }
     
     .checkbox-label span {
         font-weight: 500;
+        line-height: 18px;
     }
     
     .form-actions {
