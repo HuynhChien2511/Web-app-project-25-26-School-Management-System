@@ -385,3 +385,174 @@ INSERT INTO grade_components (course_id, semester_id, inclass_percentage, midter
 -- =====================================================
 -- END OF SCHEMA
 -- =====================================================
+
+-- Thêm value để test pagination
+
+-- Thêm ADMIN
+INSERT INTO users (username, password, full_name, email, user_type) VALUES
+('admin2','admin123','Admin Two','admin2@school.com','ADMIN'),
+('admin3','admin123','Admin Three','admin3@school.com','ADMIN'),
+('admin4','admin123','Admin Four','admin4@school.com','ADMIN'),
+('admin5','admin123','Admin Five','admin5@school.com','ADMIN'),
+('admin6','admin123','Admin Six','admin6@school.com','ADMIN');
+
+-- Thêm TEACHER
+INSERT INTO users (username, password, full_name, email, phone, user_type) VALUES
+('teacher4','teacher123','Emily Clark','emily.c@school.com','111-222-3001','TEACHER'),
+('teacher5','teacher123','David Lee','david.l@school.com','111-222-3002','TEACHER'),
+('teacher6','teacher123','Sophia Kim','sophia.k@school.com','111-222-3003','TEACHER'),
+('teacher7','teacher123','Michael Tran','michael.t@school.com','111-222-3004','TEACHER'),
+('teacher8','teacher123','Linda Nguyen','linda.n@school.com','111-222-3005','TEACHER');
+
+-- Thêm STUDENT
+INSERT INTO users (username, password, full_name, email, phone, user_type) VALUES
+('student6','student123','Frank Moore','frank.m@school.com','222-333-4001','STUDENT'),
+('student7','student123','Grace Hall','grace.h@school.com','222-333-4002','STUDENT'),
+('student8','student123','Henry Adams','henry.a@school.com','222-333-4003','STUDENT'),
+('student9','student123','Ivy Baker','ivy.b@school.com','222-333-4004','STUDENT'),
+('student10','student123','Jack Turner','jack.t@school.com','222-333-4005','STUDENT');
+
+INSERT INTO semesters (semester_name, semester_type, academic_year, start_date, end_date, weeks, is_active) VALUES
+('Fall 2023','SEMESTER_1','2023-2024','2023-09-01','2023-12-20',16,FALSE),
+('Spring 2024','SEMESTER_2','2023-2024','2024-01-10','2024-05-15',16,FALSE),
+('Summer 2024','SEMESTER_3','2023-2024','2024-06-01','2024-07-31',8,FALSE),
+('Fall 2025','SEMESTER_1','2025-2026','2025-09-01','2025-12-20',16,FALSE),
+('Spring 2026','SEMESTER_2','2025-2026','2026-01-10','2026-05-15',16,FALSE),
+('Summer 2026','SEMESTER_3','2025-2026','2026-06-01','2026-07-31',8,FALSE),
+('Fall 2026','SEMESTER_1','2026-2027','2026-09-01','2026-12-20',16,FALSE),
+('Spring 2027','SEMESTER_2','2026-2027','2027-01-10','2027-05-15',16,FALSE),
+('Summer 2027','SEMESTER_3','2026-2027','2027-06-01','2027-07-31',8,FALSE),
+('Fall 2027','SEMESTER_1','2027-2028','2027-09-01','2027-12-20',16,FALSE),
+('Spring 2028','SEMESTER_2','2027-2028','2028-01-10','2028-05-15',16,FALSE),
+('Summer 2028','SEMESTER_3','2027-2028','2028-06-01','2028-07-31',8,FALSE);
+
+INSERT INTO courses (course_code, course_name, credits, teacher_id, schedule_days, schedule_time, room_number) VALUES
+('PHY101','Physics I',3,3,'Mon,Wed','P1-P2','D101'),
+('CHEM101','Chemistry I',3,4,'Tue,Thu','P3-P4','D102'),
+('BIO101','Biology I',3,5,'Mon,Wed','P5-P6','D103'),
+('HIST101','World History',3,6,'Tue,Thu','P7-P8','E201'),
+('GEO101','Geography',3,7,'Mon,Fri','P2-P3','E202'),
+('ECON101','Economics',3,8,'Wed,Fri','P4-P5','E203'),
+('CS301','Operating Systems',4,2,'Tue,Thu','P8-P10','A201'),
+('CS302','Computer Networks',4,2,'Mon,Wed','P7-P9','A202'),
+('CS303','Software Engineering',3,2,'Tue','P1-P4','A203');
+
+
+INSERT INTO enrollments (student_id, course_id, semester_id, status, grade) VALUES
+(5,1,2,'ACTIVE', NULL),
+(5,2,1,'ACTIVE', NULL),
+(6,3,1,'ACTIVE', NULL),
+(6,4,1,'ACTIVE', NULL),
+(7,5,1,'ACTIVE', NULL),
+(7,6,1,'ACTIVE', NULL),
+(8,7,1,'ACTIVE', NULL),
+(8,8,1,'ACTIVE', NULL),
+(9,9,1,'ACTIVE', NULL),
+(9,10,1,'ACTIVE', NULL),
+(10,11,1,'ACTIVE', NULL),
+(10,12,1,'ACTIVE', NULL),
+(11,13,1,'ACTIVE', NULL),
+(12,14,1,'ACTIVE', NULL),
+(13,15,1,'ACTIVE', NULL);
+
+INSERT INTO grade_components(course_id, semester_id, inclass_percentage, midterm_percentage, final_percentage) VALUES
+(1,2,20,30,50),
+(2,2,15,35,50),
+(3,2,25,25,50),
+(4,2,10,40,50),
+(5,2,20,30,50),
+(6,2,20,30,50),
+(7,2,30,20,50),
+(8,2,25,25,50),
+(9,2,20,30,50),
+(10,2,15,35,50),
+(11,2,10,40,50),
+(12,2,20,30,50),
+(13,2,30,20,50),
+(14,2,25,25,50),
+(15,2,20,30,50);
+
+INSERT INTO attendance (enrollment_id, attendance_date, status, recorded_by) VALUES
+(1,'2024-09-02','PRESENT',2),
+(2,'2024-09-02','ABSENT',2),
+(3,'2024-09-03','PRESENT',3),
+(4,'2024-09-03','LATE',3),
+(5,'2024-09-04','PRESENT',4),
+(6,'2024-09-04','EXCUSED',4),
+(7,'2024-09-05','PRESENT',2),
+(8,'2024-09-05','ABSENT',2),
+(9,'2024-09-06','PRESENT',3),
+(10,'2024-09-06','PRESENT',3),
+(11,'2024-09-07','LATE',4),
+(12,'2024-09-07','PRESENT',4),
+(13,'2024-09-08','ABSENT',5),
+(14,'2024-09-08','PRESENT',5),
+(15,'2024-09-09','PRESENT',6);
+
+INSERT INTO grades (enrollment_id, inclass_score, midterm_score, final_score, total_score, letter_grade, grade_point) VALUES
+(1,85,78,90,86,'A',4.0),
+(2,70,65,80,72,'B',3.0),
+(3,88,82,91,88,'A',4.0),
+(4,75,70,78,74,'B',3.0),
+(5,90,85,93,90,'A',4.0),
+(6,60,65,70,66,'C+',2.3),
+(7,92,88,95,92,'A',4.0),
+(8,68,72,75,72,'B',3.0),
+(9,80,78,85,81,'B+',3.5),
+(10,77,74,80,77,'B',3.0),
+(11,85,80,88,85,'A-',3.7),
+(12,70,68,75,71,'B-',2.7),
+(13,88,85,90,88,'A',4.0),
+(14,82,79,85,82,'B+',3.5),
+(15,75,70,78,74,'B',3.0);
+
+INSERT INTO gpa_records (student_id, semester_id, gpa, total_credits, total_grade_points, is_cumulative) VALUES
+(5,1,3.8,9,34.2,FALSE),
+(6,1,3.2,7,22.4,FALSE),
+(7,1,3.5,10,35.0,FALSE),
+(8,1,3.0,8,24.0,FALSE),
+(9,1,3.6,6,21.6,FALSE),
+(10,1,3.1,9,27.9,FALSE),
+(11,1,3.9,6,23.4,FALSE),
+(12,1,2.8,6,16.8,FALSE),
+(13,1,3.7,9,33.3,FALSE),
+(14,1,3.4,6,20.4,FALSE),
+(5,NULL,3.6,30,108,TRUE),
+(6,NULL,3.1,28,86.8,TRUE),
+(7,NULL,3.5,32,112,TRUE),
+(8,NULL,3.0,26,78,TRUE),
+(9,NULL,3.4,24,81.6,TRUE);
+
+INSERT INTO announcements (title, content, author_id, course_id, is_important) VALUES
+('Welcome','Welcome to new semester',1,NULL,TRUE),
+('Exam Notice','Midterm exam next week',2,1,TRUE),
+('Homework','Homework 1 released',2,1,FALSE),
+('Schedule Change','Room changed',3,4,TRUE),
+('Holiday','School closed Friday',1,NULL,TRUE),
+('Project','Group project assigned',2,2,FALSE),
+('Reminder','Attendance mandatory',3,4,FALSE),
+('Quiz','Quiz this Thursday',4,6,FALSE),
+('Materials','Lecture slides uploaded',2,3,FALSE),
+('Forum','Use forum for questions',1,NULL,FALSE),
+('Final Exam','Final exam schedule',2,1,TRUE),
+('Grade Policy','Updated grading policy',3,4,TRUE),
+('Library','New books available',1,NULL,FALSE),
+('Workshop','Tech workshop Saturday',1,NULL,FALSE),
+('Survey','Course feedback survey',2,2,FALSE);
+
+INSERT INTO forum_posts (course_id, author_id, title, content) VALUES
+(1,5,'Question about loops','Can someone explain loops?'),
+(1,6,'Arrays','Difference between array and list'),
+(2,7,'Homework help','Need help with assignment'),
+(3,8,'SQL JOIN','How does JOIN work?'),
+(4,9,'Limits','Struggling with limits'),
+(5,10,'Vectors','Vector space explanation'),
+(6,11,'Essay format','Essay structure question'),
+(7,12,'Book list','Which books are required'),
+(1,13,'Exam tips','Any exam tips?'),
+(2,14,'Graphs','Graph traversal confusion'),
+(3,15,'Normalization','3NF explanation'),
+(4,5,'Derivatives','Chain rule help'),
+(5,6,'Matrices','Matrix multiplication'),
+(6,7,'Grammar','Grammar resources'),
+(7,8,'Themes','Literary themes discussion');
