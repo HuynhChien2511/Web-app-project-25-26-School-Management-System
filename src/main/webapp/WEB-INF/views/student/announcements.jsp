@@ -21,6 +21,10 @@
     </div>
 
     <div class="card">
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search announcements by title..." onkeyup="searchAnnouncements()">
+        </div>
+        
         <c:if test="${empty announcements}">
             <div style="text-align: center; padding: 40px; color: #999;">
                 <p>📭 No announcements at this time.</p>
@@ -60,6 +64,13 @@
                 </div>
             </div>
         </c:forEach>
+        
+        <div id="noResults" style="display: none; text-align: center; padding: 40px; color: #999;">
+            <p>📋 No announcements found matching your search.</p>
+        </div>
+        
+        <!-- Search Pagination -->
+        <div id="searchPagination" class="pagination" style="display: none;"></div>
         
         <!-- Pagination Controls -->
         <c:if test="${totalPages > 1}">
@@ -216,5 +227,121 @@
         font-weight: bold;
     }
 </style>
+
+<style>
+.search-container {
+    margin-bottom: 20px;
+}
+
+.search-box {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+</style>
+
+<script>
+const pageSize = 5;
+let currentSearchPage = 1;
+let matchedItems = [];
+
+function searchAnnouncements() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toUpperCase();
+    const items = document.querySelectorAll('.announcement-item');
+    const originalPagination = document.querySelector('.pagination:not(#searchPagination)');
+    const searchPagination = document.getElementById('searchPagination');
+    
+    matchedItems = [];
+    currentSearchPage = 1;
+    
+    for (let i = 0; i < items.length; i++) {
+        const title = items[i].querySelector('h3');
+        if (title) {
+            const titleValue = title.textContent || title.innerText;
+            if (titleValue.toUpperCase().indexOf(filter) > -1) {
+                matchedItems.push(items[i]);
+            }
+        }
+    }
+    
+    if (filter === '') {
+        for (let i = 0; i < items.length; i++) {
+            items[i].style.display = '';
+        }
+        document.getElementById('noResults').style.display = 'none';
+        if (originalPagination) originalPagination.style.display = '';
+        searchPagination.style.display = 'none';
+    } else if (matchedItems.length === 0) {
+        for (let i = 0; i < items.length; i++) {
+            items[i].style.display = 'none';
+        }
+        document.getElementById('noResults').style.display = 'block';
+        if (originalPagination) originalPagination.style.display = 'none';
+        searchPagination.style.display = 'none';
+    } else {
+        for (let i = 0; i < items.length; i++) {
+            items[i].style.display = 'none';
+        }
+        displaySearchPage(1);
+        document.getElementById('noResults').style.display = 'none';
+        if (originalPagination) originalPagination.style.display = 'none';
+        
+        if (matchedItems.length > pageSize) {
+            renderSearchPagination();
+            searchPagination.style.display = 'flex';
+        } else {
+            searchPagination.style.display = 'none';
+        }
+    }
+}
+
+function displaySearchPage(page) {
+    currentSearchPage = page;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    
+    for (let i = 0; i < matchedItems.length; i++) {
+        if (i >= start && i < end) {
+            matchedItems[i].style.display = '';
+        } else {
+            matchedItems[i].style.display = 'none';
+        }
+    }
+}
+
+function renderSearchPagination() {
+    const searchPagination = document.getElementById('searchPagination');
+    const totalPages = Math.ceil(matchedItems.length / pageSize);
+    let html = '';
+    
+    if (currentSearchPage > 1) {
+        html += `<a href="javascript:void(0)" class="page-link" onclick="displaySearchPage(${currentSearchPage - 1}); renderSearchPagination();">« Previous</a>`;
+    }
+    
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === currentSearchPage) {
+            html += `<span class="page-link active">${i}</span>`;
+        } else {
+            html += `<a href="javascript:void(0)" class="page-link" onclick="displaySearchPage(${i}); renderSearchPagination();">${i}</a>`;
+        }
+    }
+    
+    if (currentSearchPage < totalPages) {
+        html += `<a href="javascript:void(0)" class="page-link" onclick="displaySearchPage(${currentSearchPage + 1}); renderSearchPagination();">Next »</a>`;
+    }
+    
+    searchPagination.innerHTML = html;
+}
+</script>
 
 <jsp:include page="/WEB-INF/includes/footer.jsp"/>
