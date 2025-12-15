@@ -38,6 +38,9 @@
 
     <div class="card">
         <h3>Semesters</h3>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by semester name..." onkeyup="searchTable()" style="width: 100%; padding: 12px 20px; font-size: 14px; border: 2px solid #e0e0e0; border-radius: 8px; transition: all 0.3s;">
+        </div>
         <table class="table">
             <thead>
                 <tr>
@@ -190,5 +193,119 @@
     margin: 2px;
 }
 </style>
+
+<script>
+const pageSize = 10;
+let currentSearchPage = 1;
+let matchedRows = [];
+
+function searchTable() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toUpperCase();
+    const table = document.querySelector('.table');
+    const tbody = table.querySelector('tbody');
+    const tr = tbody.getElementsByTagName('tr');
+    const originalPagination = document.querySelector('.pagination:not(#searchPagination)');
+    const searchPagination = document.getElementById('searchPagination');
+    
+    matchedRows = [];
+    currentSearchPage = 1;
+    
+    // Tìm các hàng khớp với tìm kiếm
+    for (let i = 0; i < tr.length; i++) {
+        const tdName = tr[i].getElementsByTagName('td')[0];
+        const tdType = tr[i].getElementsByTagName('td')[1];
+        const tdYear = tr[i].getElementsByTagName('td')[2];
+        
+        if (tdName && tdType && tdYear) {
+            const nameValue = tdName.textContent || tdName.innerText;
+            const typeValue = tdType.textContent || tdType.innerText;
+            const yearValue = tdYear.textContent || tdYear.innerText;
+            
+            if (nameValue.toUpperCase().indexOf(filter) > -1 ||
+                typeValue.toUpperCase().indexOf(filter) > -1 ||
+                yearValue.toUpperCase().indexOf(filter) > -1) {
+                matchedRows.push(tr[i]);
+            }
+        }
+    }
+    
+    // Hiển thị kết quả
+    if (filter === '') {
+        // Không có tìm kiếm - hiển thị tất cả và dùng pagination gốc
+        for (let i = 0; i < tr.length; i++) {
+            tr[i].style.display = '';
+        }
+        document.getElementById('noResults').style.display = 'none';
+        if (originalPagination) originalPagination.style.display = '';
+        searchPagination.style.display = 'none';
+    } else if (matchedRows.length === 0) {
+        // Không có kết quả
+        for (let i = 0; i < tr.length; i++) {
+            tr[i].style.display = 'none';
+        }
+        document.getElementById('noResults').style.display = 'block';
+        if (originalPagination) originalPagination.style.display = 'none';
+        searchPagination.style.display = 'none';
+    } else {
+        // Có kết quả - hiển thị với phân trang
+        for (let i = 0; i < tr.length; i++) {
+            tr[i].style.display = 'none';
+        }
+        displaySearchPage(1);
+        document.getElementById('noResults').style.display = 'none';
+        if (originalPagination) originalPagination.style.display = 'none';
+        
+        // Chỉ hiển thị pagination nếu kết quả > pageSize
+        if (matchedRows.length > pageSize) {
+            renderSearchPagination();
+            searchPagination.style.display = 'flex';
+        } else {
+            searchPagination.style.display = 'none';
+        }
+    }
+}
+
+function displaySearchPage(page) {
+    currentSearchPage = page;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    
+    for (let i = 0; i < matchedRows.length; i++) {
+        if (i >= start && i < end) {
+            matchedRows[i].style.display = '';
+        } else {
+            matchedRows[i].style.display = 'none';
+        }
+    }
+}
+
+function renderSearchPagination() {
+    const searchPagination = document.getElementById('searchPagination');
+    const totalPages = Math.ceil(matchedRows.length / pageSize);
+    let html = '';
+    
+    // Previous button
+    if (currentSearchPage > 1) {
+        html += `<a href="javascript:void(0)" class="page-link" onclick="displaySearchPage(${currentSearchPage - 1}); renderSearchPagination();">« Previous</a>`;
+    }
+    
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === currentSearchPage) {
+            html += `<span class="page-link active">${i}</span>`;
+        } else {
+            html += `<a href="javascript:void(0)" class="page-link" onclick="displaySearchPage(${i}); renderSearchPagination();">${i}</a>`;
+        }
+    }
+    
+    // Next button
+    if (currentSearchPage < totalPages) {
+        html += `<a href="javascript:void(0)" class="page-link" onclick="displaySearchPage(${currentSearchPage + 1}); renderSearchPagination();">Next »</a>`;
+    }
+    
+    searchPagination.innerHTML = html;
+}
+</script>
 
 <jsp:include page="/WEB-INF/includes/footer.jsp"/>
