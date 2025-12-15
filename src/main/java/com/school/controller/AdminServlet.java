@@ -129,6 +129,13 @@ public class AdminServlet extends HttpServlet {
 
     private void showAddUserForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Remove any existing user attribute from both request and session to ensure clean form
+        request.removeAttribute("user");
+        if (request.getSession(false) != null) {
+            request.getSession().removeAttribute("user");
+        }
+        // Explicitly set user to null
+        request.setAttribute("user", null);
         request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
     }
 

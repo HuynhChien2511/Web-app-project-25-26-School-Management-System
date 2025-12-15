@@ -2,6 +2,7 @@ package com.school.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,7 +145,7 @@ public class GradeServlet extends HttpServlet {
         // Get grade component for this course
         GradeComponent component = gradeComponentDAO.getGradeComponent(
             courseId, 
-            enrollments.isEmpty() ? 0 : enrollments.get(0).getSemesterId()
+            enrollments.isEmpty() ? 0 : enrollments.getFirst().getSemesterId()
         );
         
         // Get existing grades
@@ -176,7 +177,7 @@ public class GradeServlet extends HttpServlet {
         for (Enrollment enrollment : enrollments) {
             // Calculate in-class score based on attendance rate
             double attendanceRate = attendanceDAO.getAttendanceRate(enrollment.getEnrollmentId());
-            BigDecimal inclassScore = new BigDecimal(attendanceRate).setScale(2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal inclassScore = new BigDecimal(attendanceRate).setScale(2, RoundingMode.HALF_UP);
             
             if (gradeDAO.updateInclassScore(enrollment.getEnrollmentId(), inclassScore)) {
                 updatedCount++;
@@ -259,7 +260,7 @@ public class GradeServlet extends HttpServlet {
         
         GradeComponent component = gradeComponentDAO.getGradeComponent(
             courseId, 
-            enrollments.get(0).getSemesterId()
+            enrollments.getFirst().getSemesterId()
         );
         
         if (component == null) {
