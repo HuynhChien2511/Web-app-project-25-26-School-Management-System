@@ -1,15 +1,16 @@
 package com.school.dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDate;
 
 import com.school.model.Attendance;
+import com.school.model.AttendanceSummary;
 import com.school.util.DatabaseConnection;
 
 public class AttendanceDAO {
@@ -187,6 +188,49 @@ public class AttendanceDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public List<AttendanceSummary> getAttendanceSummaryByCourse(int courseId) {
+        List<AttendanceSummary> list = new ArrayList<>();
+        String sql = "SELECT e.enrollment_id, e.student_id, u.full_name AS student_name, " +
+                "SUM(CASE WHEN a.status = 'PRESENT' THEN 1 ELSE 0 END) AS present_count, " +
+                "SUM(CASE WHEN a.status = 'ABSENT' THEN 1 ELSE 0 END) AS absent_count, " +
+                "SUM(CASE WHEN a.status = 'LATE' THEN 1 ELSE 0 END) AS late_count, " +
+                "SUM(CASE WHEN a.status = 'EXCUSED' THEN 1 ELSE 0 END) AS excused_count, " +
+                "COUNT(a.attendance_id) AS total_count " +
+                "FROM enrollments e " +
+                "JOIN users u ON e.student_id = u.user_id " +
+                "LEFT JOIN attendance a ON a.enrollment_id = e.enrollment_id " +
+                "WHERE e.course_id = ? " +
+                "GROUP BY e.enrollment_id, e.student_id, u.full_name " +
+                "ORDER BY u.full_name";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, courseId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                AttendanceSummary s = new AttendanceSummary();
+                s.setEnrollmentId(rs.getInt("enrollment_id"));
+                s.setStudentId(rs.getInt("student_id"));
+                s.setStudentName(rs.getString("student_name"));
+                int present = rs.getInt("present_count");
+                int absent = rs.getInt("absent_count");
+                int late = rs.getInt("late_count");
+                int excused = rs.getInt("excused_count");
+                int total = rs.getInt("total_count");
+                s.setPresentCount(present);
+                s.setAbsentCount(absent);
+                s.setLateCount(late);
+                s.setExcusedCount(excused);
+                int attended = present + late + excused;
+                s.setAttendanceRate(total == 0 ? 100.0 : (attended * 100.0) / total);
+                list.add(s);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     private Attendance extractAttendanceFromResultSet(ResultSet rs) throws SQLException {

@@ -21,7 +21,14 @@
 
     <div class="card">
         <h3>Select a Course</h3>
-        <p>Choose a course to record attendance:</p>
+        <c:choose>
+            <c:when test="${timeFiltered}">
+                <p>Showing courses happening right now based on today and current period.</p>
+            </c:when>
+            <c:otherwise>
+                <p>Choose a course to record attendance:</p>
+            </c:otherwise>
+        </c:choose>
         <div class="search-container">
             <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by course code or name..." onkeyup="searchCourses()">
         </div>
@@ -35,12 +42,14 @@
                         <span>📍 ${course.roomNumber}</span>
                         <span>👥 ${course.maxStudents} students</span>
                     </div>
-                    <a href="${pageContext.request.contextPath}/attendance/take?courseId=${course.courseId}" 
-                       class="btn btn-primary btn-block">Take Attendance</a>
+                          <a href="${pageContext.request.contextPath}/attendance/take?courseId=${course.courseId}" 
+                              class="btn btn-primary btn-block">Take Attendance</a>
+                          <a href="${pageContext.request.contextPath}/attendance/view?courseId=${course.courseId}"
+                              class="btn btn-secondary btn-block" style="margin-top:8px;">View Attendance</a>
                 </div>
             </c:forEach>
             <c:if test="${empty courses}">
-                <p class="text-center">No courses assigned to you.</p>
+                <p class="text-center">No courses are scheduled for you at this time slot.</p>
             </c:if>
         </div>
         <div id="noResults" style="display: none; text-align: center; padding: 20px; color: #999;">No courses found matching your search.</div>

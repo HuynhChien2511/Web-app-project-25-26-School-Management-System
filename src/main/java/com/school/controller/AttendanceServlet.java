@@ -1,15 +1,21 @@
 package com.school.controller;
 
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.school.dao.AttendanceDAO;
 import com.school.dao.CourseDAO;
 import com.school.dao.EnrollmentDAO;
 import com.school.model.Attendance;
+import com.school.model.AttendanceSummary;
 import com.school.model.Course;
 import com.school.model.Enrollment;
 import com.school.model.User;
@@ -90,8 +96,10 @@ public class AttendanceServlet extends HttpServlet {
     private void showTeacherCourses(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         User teacher = (User) request.getSession().getAttribute("user");
-        List<Course> courses = courseDAO.getCoursesByTeacher(teacher.getUserId());
-        request.setAttribute("courses", courses);
+        List<Course> allCourses = courseDAO.getCoursesByTeacher(teacher.getUserId());
+        List<Course> coursesNow = filterCoursesHappeningNow(allCourses);
+        request.setAttribute("courses", coursesNow);
+        request.setAttribute("timeFiltered", true);
         request.getRequestDispatcher("/WEB-INF/views/teacher/attendance-courses.jsp").forward(request, response);
     }
 
@@ -128,6 +136,14 @@ public class AttendanceServlet extends HttpServlet {
                          LocalDate.parse(dateStr) : LocalDate.now();
 
         Course course = courseDAO.getCourseById(courseId);
+        // Ownership check for teachers
+        User current = (User) request.getSession().getAttribute("user");
+        if (current != null && current.getUserType() == User.UserType.TEACHER) {
+            if (course == null || course.getTeacherId() != current.getUserId()) {
+                response.sendRedirect(request.getContextPath() + "/attendance");
+                return;
+            }
+        }
         List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByCourse(courseId);
         
         // Get existing attendance for this date
@@ -148,22 +164,21 @@ public class AttendanceServlet extends HttpServlet {
 
     private void viewAttendance(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int enrollmentId = Integer.parseInt(request.getParameter("enrollmentId"));
-        
-        Enrollment enrollment = enrollmentDAO.getEnrollmentsByCourse(0).stream()
-                .filter(e -> e.getEnrollmentId() == enrollmentId)
-                .findFirst().orElse(null);
-        
-        List<Attendance> attendances = attendanceDAO.getAttendanceByEnrollment(enrollmentId);
-        int absentCount = attendanceDAO.getAbsentCount(enrollmentId);
-        int presentCount = attendanceDAO.getPresentCount(enrollmentId);
-        double attendanceRate = attendanceDAO.getAttendanceRate(enrollmentId);
+        int courseId = Integer.parseInt(request.getParameter("courseId"));
+        Course course = courseDAO.getCourseById(courseId);
 
-        request.setAttribute("enrollment", enrollment);
-        request.setAttribute("attendances", attendances);
-        request.setAttribute("absentCount", absentCount);
-        request.setAttribute("presentCount", presentCount);
-        request.setAttribute("attendanceRate", attendanceRate);
+        // Ownership check for teachers
+        User current = (User) request.getSession().getAttribute("user");
+        if (current != null && current.getUserType() == User.UserType.TEACHER) {
+            if (course == null || course.getTeacherId() != current.getUserId()) {
+                response.sendRedirect(request.getContextPath() + "/attendance");
+                return;
+            }
+        }
+
+        List<AttendanceSummary> summaries = attendanceDAO.getAttendanceSummaryByCourse(courseId);
+        request.setAttribute("course", course);
+        request.setAttribute("attendanceRecords", summaries);
         request.getRequestDispatcher("/WEB-INF/views/teacher/view-attendance.jsp").forward(request, response);
     }
 
@@ -172,6 +187,16 @@ public class AttendanceServlet extends HttpServlet {
         int courseId = Integer.parseInt(request.getParameter("courseId"));
         LocalDate date = LocalDate.parse(request.getParameter("date"));
         
+        // Ownership check for teachers
+        User current = (User) request.getSession().getAttribute("user");
+        if (current != null && current.getUserType() == User.UserType.TEACHER) {
+            Course course = courseDAO.getCourseById(courseId);
+            if (course == null || course.getTeacherId() != current.getUserId()) {
+                response.sendRedirect(request.getContextPath() + "/attendance");
+                return;
+            }
+        }
+
         List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByCourse(courseId);
         
         int savedCount = 0;
@@ -219,10 +244,61 @@ public class AttendanceServlet extends HttpServlet {
         }
         
         String redirectUrl = request.getParameter("redirectUrl");
-        if (redirectUrl != null && !redirectUrl.isEmpty()) {
+        if (redirectUrl != null && !redirectUrl.isEmpty() && redirectUrl.startsWith(request.getContextPath())) {
             response.sendRedirect(redirectUrl);
         } else {
             response.sendRedirect(request.getContextPath() + "/attendance/");
         }
+    }
+
+    private List<Course> filterCoursesHappeningNow(List<Course> courses) {
+        LocalDateTime now = LocalDateTime.now();
+        DayOfWeek currentDay = now.getDayOfWeek();
+        LocalTime currentTime = now.toLocalTime();
+        String dayToken = mapDayToToken(currentDay);
+        return courses.stream()
+                .filter(c -> isCourseRunningNow(c, dayToken, currentTime))
+                .toList();
+    }
+
+    private boolean isCourseRunningNow(Course course, String dayToken, LocalTime currentTime) {
+        if (course == null) return false;
+
+        String days = course.getScheduleDays();
+        if (days == null || !containsDay(days, dayToken)) {
+            return false;
+        }
+
+        String schedule = course.getScheduleTime();
+        if (schedule == null) return false;
+
+        Matcher m = Pattern.compile(".*\\((\\d{2}:\\d{2})-(\\d{2}:\\d{2})\\).*").matcher(schedule);
+        if (!m.matches()) return false;
+
+        LocalTime start = LocalTime.parse(m.group(1));
+        LocalTime end = LocalTime.parse(m.group(2));
+        return !currentTime.isBefore(start) && !currentTime.isAfter(end);
+    }
+
+    private boolean containsDay(String scheduleDays, String dayToken) {
+        String[] parts = scheduleDays.split(",");
+        for (String part : parts) {
+            if (part.trim().equalsIgnoreCase(dayToken)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String mapDayToToken(DayOfWeek day) {
+        return switch (day) {
+            case MONDAY -> "Mon";
+            case TUESDAY -> "Tue";
+            case WEDNESDAY -> "Wed";
+            case THURSDAY -> "Thu";
+            case FRIDAY -> "Fri";
+            case SATURDAY -> "Sat";
+            case SUNDAY -> "Sun";
+        };
     }
 }

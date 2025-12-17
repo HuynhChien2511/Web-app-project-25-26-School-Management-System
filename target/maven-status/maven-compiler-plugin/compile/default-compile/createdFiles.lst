@@ -13,6 +13,7 @@ com\school\util\SessionValidator.class
 com\school\model\GradeComponent.class
 com\school\controller\StudentServlet.class
 com\school\filter\AdminFilter.class
+com\school\controller\AttendanceServlet$1.class
 com\school\model\Course.class
 com\school\model\Semester.class
 com\school\model\GpaRecord.class
@@ -33,6 +34,7 @@ com\school\controller\TeacherServlet.class
 com\school\dao\ForumDAO.class
 com\school\model\Enrollment$EnrollmentStatus.class
 com\school\controller\GradeServlet.class
+com\school\model\AttendanceSummary.class
 com\school\dao\EnrollmentDAO.class
 com\school\filter\AuthFilter.class
 com\school\model\Enrollment.class
