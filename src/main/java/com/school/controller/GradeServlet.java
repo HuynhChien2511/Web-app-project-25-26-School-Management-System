@@ -222,6 +222,9 @@ public class GradeServlet extends HttpServlet {
             throws ServletException, IOException {
         int courseId = Integer.parseInt(request.getParameter("courseId"));
         List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByCourse(courseId);
+        // Pull component once for this course/semester to recompute totals inline
+        GradeComponent component = enrollments.isEmpty() ? null
+                : gradeComponentDAO.getGradeComponent(courseId, enrollments.getFirst().getSemesterId());
         
         int savedCount = 0;
         for (Enrollment enrollment : enrollments) {
@@ -241,9 +244,19 @@ public class GradeServlet extends HttpServlet {
                 gradeDAO.updateFinalScore(enrollment.getEnrollmentId(), new BigDecimal(finalStr));
                 savedCount++;
             }
+
+            // If we have all three parts and a component, recalc totals/letter/GPA immediately
+            if (component != null) {
+                gradeDAO.recalculateGrade(enrollment.getEnrollmentId(), component);
+                Grade grade = gradeDAO.getGradeByEnrollment(enrollment.getEnrollmentId());
+                if (grade != null && grade.getLetterGrade() != null) {
+                    enrollmentDAO.updateEnrollmentGrade(enrollment.getEnrollmentId(), grade.getLetterGrade());
+                    gpaRecordDAO.calculateAndSaveGpa(enrollment.getStudentId(), enrollment.getSemesterId());
+                }
+            }
         }
 
-        request.getSession().setAttribute("message", "Grades saved successfully!");
+        request.getSession().setAttribute("message", "Grades saved and totals recalculated!");
         response.sendRedirect(request.getContextPath() + "/grades/enter?courseId=" + courseId);
     }
 

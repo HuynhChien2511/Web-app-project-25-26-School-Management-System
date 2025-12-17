@@ -3,16 +3,23 @@ package com.school.model;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 public class GpaRecord {
     private int id;
     private int studentId;
     private int semesterId;
+    private String semesterName;
+    private String academicYear;
     private BigDecimal semesterGpa;
     private int semesterCredits;
     private BigDecimal cumulativeGpa;
     private int totalCredits;
     private LocalDateTime calculatedAt;
+    // Optional analytics for admin views
+    private Integer creditsAttempted;
+    private Integer creditsEarned;
     
     // Constructors
     public GpaRecord() {
@@ -55,6 +62,22 @@ public class GpaRecord {
         this.semesterId = semesterId;
     }
     
+    public String getSemesterName() {
+        return semesterName;
+    }
+    
+    public void setSemesterName(String semesterName) {
+        this.semesterName = semesterName;
+    }
+    
+    public String getAcademicYear() {
+        return academicYear;
+    }
+    
+    public void setAcademicYear(String academicYear) {
+        this.academicYear = academicYear;
+    }
+    
     public BigDecimal getSemesterGpa() {
         return semesterGpa;
     }
@@ -93,6 +116,26 @@ public class GpaRecord {
     
     public void setCalculatedAt(LocalDateTime calculatedAt) {
         this.calculatedAt = calculatedAt;
+    }
+
+    public Date getCalculatedAtDate() {
+        return calculatedAt == null ? null : Date.from(calculatedAt.atZone(ZoneId.systemDefault()).toInstant());
+    }
+    
+    public Integer getCreditsAttempted() {
+        return creditsAttempted;
+    }
+    
+    public void setCreditsAttempted(Integer creditsAttempted) {
+        this.creditsAttempted = creditsAttempted;
+    }
+    
+    public Integer getCreditsEarned() {
+        return creditsEarned;
+    }
+    
+    public void setCreditsEarned(Integer creditsEarned) {
+        this.creditsEarned = creditsEarned;
     }
     
     // Helper methods

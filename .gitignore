@@ -1,1 +1,18 @@
+# Ignore build outputs
+/target/
+*.class
+
 /StudentManagementlab/target/
+
+# Maven/Gradle build outputs
+/target/
+
+# Compiled class files
+*.class
+
+# IDE files
+.idea/
+.project
+.classpath
+.settings/
+.vscode/

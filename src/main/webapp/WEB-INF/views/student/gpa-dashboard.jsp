@@ -74,7 +74,7 @@
                                 </span>
                             </td>
                             <td>${record.totalCredits}</td>
-                            <td><fmt:formatDate value="${record.calculatedAt}" pattern="MMM dd, yyyy"/></td>
+                            <td><fmt:formatDate value="${record.calculatedAtDate}" pattern="MMM dd, yyyy"/></td>
                         </tr>
                     </c:forEach>
                 </tbody>

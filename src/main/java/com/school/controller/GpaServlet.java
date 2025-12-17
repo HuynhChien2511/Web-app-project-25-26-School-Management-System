@@ -1,15 +1,20 @@
 package com.school.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.school.dao.EnrollmentDAO;
 import com.school.dao.GpaRecordDAO;
+import com.school.dao.GradeComponentDAO;
 import com.school.dao.GradeDAO;
 import com.school.dao.SemesterDAO;
 import com.school.dao.UserDAO;
 import com.school.model.Enrollment;
 import com.school.model.GpaRecord;
+import com.school.model.Grade;
+import com.school.model.GradeComponent;
 import com.school.model.Semester;
 import com.school.model.User;
 
@@ -21,6 +26,8 @@ import jakarta.servlet.http.HttpServletResponse;
 public class GpaServlet extends HttpServlet {
     private GpaRecordDAO gpaRecordDAO;
     private EnrollmentDAO enrollmentDAO;
+    private GradeDAO gradeDAO;
+    private GradeComponentDAO gradeComponentDAO;
     private SemesterDAO semesterDAO;
     private UserDAO userDAO;
 
@@ -28,6 +35,8 @@ public class GpaServlet extends HttpServlet {
     public void init() throws ServletException {
         gpaRecordDAO = new GpaRecordDAO();
         enrollmentDAO = new EnrollmentDAO();
+        gradeDAO = new GradeDAO();
+        gradeComponentDAO = new GradeComponentDAO();
         semesterDAO = new SemesterDAO();
         userDAO = new UserDAO();
     }
@@ -123,6 +132,27 @@ public class GpaServlet extends HttpServlet {
         List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByStudentWithPagination(studentId, page, pageSize);
         int totalEnrollments = enrollmentDAO.getTotalEnrollmentCountByStudent(studentId);
         int totalPages = (int) Math.ceil((double) totalEnrollments / pageSize);
+
+        // Build grade/component maps for quick lookup in JSP
+        Map<Integer, Grade> gradeMap = new HashMap<>();
+        Map<Integer, GradeComponent> componentMap = new HashMap<>();
+        for (Enrollment enrollment : enrollments) {
+            Grade grade = gradeDAO.getGradeByEnrollment(enrollment.getEnrollmentId());
+            if (grade != null) {
+                gradeMap.put(enrollment.getEnrollmentId(), grade);
+            }
+            // Only fetch component when semesterId is present
+            if (enrollment.getCourseId() > 0 && enrollment.getSemesterId() > 0) {
+                GradeComponent comp = gradeComponentDAO.getGradeComponent(enrollment.getCourseId(), enrollment.getSemesterId());
+                if (comp != null) {
+                    componentMap.put(enrollment.getEnrollmentId(), comp);
+                    // If grade exists but total score is missing, calculate it now
+                    if (grade != null && grade.getTotalScore() == null && comp != null) {
+                        grade.calculateFinalGrade(comp);
+                    }
+                }
+            }
+        }
         
         // Get all semesters
         List<Semester> semesters = semesterDAO.getAllSemesters();
@@ -135,6 +165,8 @@ public class GpaServlet extends HttpServlet {
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("pageSize", pageSize);
+        request.setAttribute("gradeMap", gradeMap);
+        request.setAttribute("componentMap", componentMap);
         
         if (user.getUserType() == User.UserType.STUDENT) {
             request.getRequestDispatcher("/WEB-INF/views/student/gpa-dashboard.jsp").forward(request, response);
