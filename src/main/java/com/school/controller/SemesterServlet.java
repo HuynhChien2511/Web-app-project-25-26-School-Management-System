@@ -241,9 +241,14 @@ public class SemesterServlet extends HttpServlet {
             throws ServletException, IOException {
         int semesterId = Integer.parseInt(request.getParameter("semesterId"));
         int courseId = Integer.parseInt(request.getParameter("courseId"));
-        BigDecimal inclassPercentage = new BigDecimal(request.getParameter("inclassPercentage"));
-        BigDecimal midtermPercentage = new BigDecimal(request.getParameter("midtermPercentage"));
-        BigDecimal finalPercentage = new BigDecimal(request.getParameter("finalPercentage"));
+        // Enforce integer inputs
+        int inclassInt = Integer.parseInt(request.getParameter("inclassPercentage").trim());
+        int midtermInt = Integer.parseInt(request.getParameter("midtermPercentage").trim());
+        int finalInt = Integer.parseInt(request.getParameter("finalPercentage").trim());
+
+        BigDecimal inclassPercentage = new BigDecimal(inclassInt).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal midtermPercentage = new BigDecimal(midtermInt).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal finalPercentage = new BigDecimal(finalInt).setScale(2, java.math.RoundingMode.HALF_UP);
 
         GradeComponent component = new GradeComponent();
         component.setCourseId(courseId);
@@ -253,7 +258,7 @@ public class SemesterServlet extends HttpServlet {
         component.setFinalPercentage(finalPercentage);
 
         if (!component.isValidPercentages()) {
-            request.getSession().setAttribute("error", "Percentages must sum to 100!");
+            request.getSession().setAttribute("error", "Percentages must be integers in [0,100] and sum to 100.");
             response.sendRedirect(request.getContextPath() + "/admin/semesters/components?semesterId=" + semesterId);
             return;
         }
@@ -270,9 +275,14 @@ public class SemesterServlet extends HttpServlet {
             throws ServletException, IOException {
         int componentId = Integer.parseInt(request.getParameter("componentId"));
         int semesterId = Integer.parseInt(request.getParameter("semesterId"));
-        BigDecimal inclassPercentage = new BigDecimal(request.getParameter("inclassPercentage"));
-        BigDecimal midtermPercentage = new BigDecimal(request.getParameter("midtermPercentage"));
-        BigDecimal finalPercentage = new BigDecimal(request.getParameter("finalPercentage"));
+        // Enforce integer inputs
+        int inclassInt = Integer.parseInt(request.getParameter("inclassPercentage").trim());
+        int midtermInt = Integer.parseInt(request.getParameter("midtermPercentage").trim());
+        int finalInt = Integer.parseInt(request.getParameter("finalPercentage").trim());
+
+        BigDecimal inclassPercentage = new BigDecimal(inclassInt).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal midtermPercentage = new BigDecimal(midtermInt).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal finalPercentage = new BigDecimal(finalInt).setScale(2, java.math.RoundingMode.HALF_UP);
 
         GradeComponent component = gradeComponentDAO.getGradeComponentById(componentId);
         if (component == null) {
@@ -286,7 +296,7 @@ public class SemesterServlet extends HttpServlet {
         component.setFinalPercentage(finalPercentage);
 
         if (!component.isValidPercentages()) {
-            request.getSession().setAttribute("error", "Percentages must sum to 100!");
+            request.getSession().setAttribute("error", "Percentages must be integers in [0,100] and sum to 100.");
             response.sendRedirect(request.getContextPath() + "/admin/semesters/components?semesterId=" + semesterId);
             return;
         }

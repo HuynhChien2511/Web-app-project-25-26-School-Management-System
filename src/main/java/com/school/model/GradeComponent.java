@@ -76,8 +76,26 @@ public class GradeComponent {
     
     // Helper methods
     public boolean isValidPercentages() {
+        if (inclassPercentage == null || midtermPercentage == null || finalPercentage == null) {
+            return false;
+        }
+        // Enforce integer percentages in range [0, 100]
+        if (!isInteger(inclassPercentage) || !isInteger(midtermPercentage) || !isInteger(finalPercentage)) {
+            return false;
+        }
+        BigDecimal zero = BigDecimal.ZERO;
+        BigDecimal hundred = new BigDecimal("100");
+        if (inclassPercentage.compareTo(zero) < 0 || inclassPercentage.compareTo(hundred) > 0) return false;
+        if (midtermPercentage.compareTo(zero) < 0 || midtermPercentage.compareTo(hundred) > 0) return false;
+        if (finalPercentage.compareTo(zero) < 0 || finalPercentage.compareTo(hundred) > 0) return false;
+
+        // Sum must equal exactly 100 (no tolerance since integers)
         BigDecimal total = inclassPercentage.add(midtermPercentage).add(finalPercentage);
-        return total.compareTo(new BigDecimal("100.00")) == 0;
+        return total.compareTo(hundred) == 0;
+    }
+
+    private boolean isInteger(BigDecimal value) {
+        return value.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0;
     }
     
     public BigDecimal calculateWeightedScore(BigDecimal inclassScore, BigDecimal midtermScore, BigDecimal finalScore) {
