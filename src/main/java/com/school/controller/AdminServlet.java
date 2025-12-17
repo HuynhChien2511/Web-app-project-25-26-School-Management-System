@@ -129,14 +129,7 @@ public class AdminServlet extends HttpServlet {
 
     private void showAddUserForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Remove any existing user attribute from both request and session to ensure clean form
-        request.removeAttribute("user");
-        if (request.getSession(false) != null) {
-            request.getSession().removeAttribute("user");
-        }
-        // Explicitly set user to null
-        request.setAttribute("user", null);
-        request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/admin/add-user-form.jsp").forward(request, response);
     }
 
     private void showEditUserForm(HttpServletRequest request, HttpServletResponse response)
@@ -144,7 +137,7 @@ public class AdminServlet extends HttpServlet {
         int userId = Integer.parseInt(request.getParameter("id"));
         User user = userDAO.getUserById(userId);
         request.setAttribute("user", user);
-        request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/admin/edit-user-form.jsp").forward(request, response);
     }
 
     private void addUser(HttpServletRequest request, HttpServletResponse response)
@@ -161,7 +154,7 @@ public class AdminServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/users?success=added");
         } else {
             request.setAttribute("error", "Failed to add user");
-            request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/add-user-form.jsp").forward(request, response);
         }
     }
 
@@ -181,7 +174,7 @@ public class AdminServlet extends HttpServlet {
         } else {
             request.setAttribute("error", "Failed to update user");
             request.setAttribute("user", user);
-            request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admin/edit-user-form.jsp").forward(request, response);
         }
     }
 
