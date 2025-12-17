@@ -46,13 +46,9 @@
                         <td>${enrollment.studentName}</td>
                         <td>${enrollment.enrollmentDate}</td>
                         <td>
-                            <form action="${pageContext.request.contextPath}/teacher/grades/update" method="post" style="display:inline;">
-                                <input type="hidden" name="enrollmentId" value="${enrollment.enrollmentId}">
-                                <input type="hidden" name="courseId" value="${course.courseId}">
-                                <input type="text" name="grade" value="${enrollment.grade}" 
-                                       style="width:60px; padding:5px;" placeholder="A-F">
-                                <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                            </form>
+                            <span class="grade-box ${empty enrollment.grade ? 'grade-none' : 'grade-set'}">
+                                ${empty enrollment.grade ? 'N' : enrollment.grade}
+                            </span>
                         </td>
                         <td>
                             <span class="badge badge-${enrollment.status == 'ACTIVE' ? 'active' : 
@@ -114,6 +110,25 @@
     .btn-sm {
         padding: 5px 10px;
         font-size: 12px;
+    }
+    
+    .grade-box {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-weight: bold;
+        min-width: 40px;
+        text-align: center;
+    }
+    
+    .grade-set {
+        background-color: #667eea;
+        color: white;
+    }
+    
+    .grade-none {
+        background-color: #e0e0e0;
+        color: #666;
     }
     
     .pagination {
