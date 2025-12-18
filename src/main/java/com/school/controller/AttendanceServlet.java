@@ -105,26 +105,14 @@ public class AttendanceServlet extends HttpServlet {
 
     private void showAllCourses(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Pagination parameters
-        int page = 1;
-        String pageParam = request.getParameter("page");
-        if (pageParam != null && !pageParam.isEmpty()) {
-            try {
-                page = Integer.parseInt(pageParam);
-            } catch (NumberFormatException e) {
-                page = 1;
-            }
-        }
-        
-        int pageSize = 9;
-        List<Course> courses = courseDAO.getCoursesWithPagination(page, pageSize);
-        int totalCourses = courseDAO.getTotalCourseCount();
-        int totalPages = (int) Math.ceil((double) totalCourses / pageSize);
-        
-        request.setAttribute("courses", courses);
-        request.setAttribute("currentPage", page);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("pageSize", pageSize);
+        // Show courses happening now across all teachers
+        List<Course> allCourses = courseDAO.getAllCourses();
+        List<Course> filtered = filterCoursesHappeningNow(allCourses);
+        request.setAttribute("courses", filtered);
+        request.setAttribute("currentPage", 1);
+        request.setAttribute("totalPages", 1);
+        request.setAttribute("pageSize", filtered != null ? filtered.size() : 0);
+        request.setAttribute("timeFiltered", true);
         request.getRequestDispatcher("/WEB-INF/views/admin/attendance-courses.jsp").forward(request, response);
     }
 

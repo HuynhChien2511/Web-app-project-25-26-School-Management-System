@@ -118,7 +118,7 @@ public class GradeDAO {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setBigDecimal(1, score);
+            stmt.setBigDecimal(1, score == null ? null : score.setScale(0, java.math.RoundingMode.HALF_UP));
             stmt.setInt(2, enrollmentId);
             
             int updated = stmt.executeUpdate();
@@ -127,7 +127,7 @@ public class GradeDAO {
                 String insertSql = "INSERT INTO grades (enrollment_id, inclass_score) VALUES (?, ?)";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                     insertStmt.setInt(1, enrollmentId);
-                    insertStmt.setBigDecimal(2, score);
+                    insertStmt.setBigDecimal(2, score == null ? null : score.setScale(0, java.math.RoundingMode.HALF_UP));
                     return insertStmt.executeUpdate() > 0;
                 }
             }
@@ -144,7 +144,7 @@ public class GradeDAO {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setBigDecimal(1, score);
+            stmt.setBigDecimal(1, score == null ? null : score.setScale(0, java.math.RoundingMode.HALF_UP));
             stmt.setInt(2, enrollmentId);
             
             int updated = stmt.executeUpdate();
@@ -152,7 +152,7 @@ public class GradeDAO {
                 String insertSql = "INSERT INTO grades (enrollment_id, midterm_score) VALUES (?, ?)";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                     insertStmt.setInt(1, enrollmentId);
-                    insertStmt.setBigDecimal(2, score);
+                    insertStmt.setBigDecimal(2, score == null ? null : score.setScale(0, java.math.RoundingMode.HALF_UP));
                     return insertStmt.executeUpdate() > 0;
                 }
             }
@@ -169,7 +169,7 @@ public class GradeDAO {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setBigDecimal(1, score);
+            stmt.setBigDecimal(1, score == null ? null : score.setScale(0, java.math.RoundingMode.HALF_UP));
             stmt.setInt(2, enrollmentId);
             
             int updated = stmt.executeUpdate();
@@ -177,7 +177,7 @@ public class GradeDAO {
                 String insertSql = "INSERT INTO grades (enrollment_id, final_score) VALUES (?, ?)";
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                     insertStmt.setInt(1, enrollmentId);
-                    insertStmt.setBigDecimal(2, score);
+                    insertStmt.setBigDecimal(2, score == null ? null : score.setScale(0, java.math.RoundingMode.HALF_UP));
                     return insertStmt.executeUpdate() > 0;
                 }
             }
@@ -190,7 +190,12 @@ public class GradeDAO {
 
     public boolean recalculateGrade(int enrollmentId, GradeComponent component) {
         Grade grade = getGradeByEnrollment(enrollmentId);
-        if (grade != null && grade.isComplete()) {
+        if (grade == null || component == null) {
+            return false;
+        }
+
+        // Recalculate whenever all three component scores are present
+        if (grade.hasAllComponentScores()) {
             grade.calculateFinalGrade(component);
             return updateGrade(grade);
         }

@@ -144,8 +144,8 @@ public class GradeServlet extends HttpServlet {
         
         // Get grade component for this course
         GradeComponent component = gradeComponentDAO.getGradeComponent(
-            courseId, 
-            enrollments.isEmpty() ? 0 : enrollments.getFirst().getSemesterId()
+            courseId,
+            enrollments.isEmpty() ? 0 : enrollments.get(0).getSemesterId()
         );
         
         // Get existing grades
@@ -175,9 +175,9 @@ public class GradeServlet extends HttpServlet {
         
         int updatedCount = 0;
         for (Enrollment enrollment : enrollments) {
-            // Calculate in-class score based on attendance rate
+            // Calculate in-class score based on attendance rate, rounded to nearest integer
             double attendanceRate = attendanceDAO.getAttendanceRate(enrollment.getEnrollmentId());
-            BigDecimal inclassScore = new BigDecimal(attendanceRate).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal inclassScore = new BigDecimal(attendanceRate).setScale(0, RoundingMode.HALF_UP);
             
             if (gradeDAO.updateInclassScore(enrollment.getEnrollmentId(), inclassScore)) {
                 updatedCount++;
@@ -224,7 +224,7 @@ public class GradeServlet extends HttpServlet {
         List<Enrollment> enrollments = enrollmentDAO.getEnrollmentsByCourse(courseId);
         // Pull component once for this course/semester to recompute totals inline
         GradeComponent component = enrollments.isEmpty() ? null
-                : gradeComponentDAO.getGradeComponent(courseId, enrollments.getFirst().getSemesterId());
+            : gradeComponentDAO.getGradeComponent(courseId, enrollments.get(0).getSemesterId());
         
         int savedCount = 0;
         for (Enrollment enrollment : enrollments) {
@@ -233,15 +233,18 @@ public class GradeServlet extends HttpServlet {
             String finalStr = request.getParameter("final_" + enrollment.getEnrollmentId());
             
             if (inclassStr != null && !inclassStr.isEmpty()) {
-                gradeDAO.updateInclassScore(enrollment.getEnrollmentId(), new BigDecimal(inclassStr));
+                gradeDAO.updateInclassScore(enrollment.getEnrollmentId(),
+                        new BigDecimal(inclassStr).setScale(0, RoundingMode.HALF_UP));
                 savedCount++;
             }
             if (midtermStr != null && !midtermStr.isEmpty()) {
-                gradeDAO.updateMidtermScore(enrollment.getEnrollmentId(), new BigDecimal(midtermStr));
+                gradeDAO.updateMidtermScore(enrollment.getEnrollmentId(),
+                        new BigDecimal(midtermStr).setScale(0, RoundingMode.HALF_UP));
                 savedCount++;
             }
             if (finalStr != null && !finalStr.isEmpty()) {
-                gradeDAO.updateFinalScore(enrollment.getEnrollmentId(), new BigDecimal(finalStr));
+                gradeDAO.updateFinalScore(enrollment.getEnrollmentId(),
+                        new BigDecimal(finalStr).setScale(0, RoundingMode.HALF_UP));
                 savedCount++;
             }
 
@@ -272,8 +275,8 @@ public class GradeServlet extends HttpServlet {
         }
         
         GradeComponent component = gradeComponentDAO.getGradeComponent(
-            courseId, 
-            enrollments.getFirst().getSemesterId()
+            courseId,
+            enrollments.get(0).getSemesterId()
         );
         
         if (component == null) {

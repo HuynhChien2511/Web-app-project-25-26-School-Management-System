@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <c:set var="pageTitle" value="Grade Components" scope="request"/>
 <jsp:include page="/WEB-INF/includes/header.jsp"/>
 
@@ -74,18 +75,18 @@
                                     <input type="hidden" name="componentId" value="${currentComponent.id}">
                                     <input type="hidden" name="semesterId" value="${semester.id}">
                                     <td>
-                                        <input type="number" step="0.01" min="0" max="100" 
-                                               name="inclassPercentage" value="${currentComponent.inclassPercentage}" 
+                                             <input type="number" step="1" min="0" max="100" pattern="^\\d{1,3}$"
+                                                 name="inclassPercentage" value="<fmt:formatNumber value='${currentComponent.inclassPercentage}' maxFractionDigits='0'/>" 
                                                class="form-control percentage-input" required>
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0" max="100" 
-                                               name="midtermPercentage" value="${currentComponent.midtermPercentage}" 
+                                             <input type="number" step="1" min="0" max="100" pattern="^\\d{1,3}$"
+                                                 name="midtermPercentage" value="<fmt:formatNumber value='${currentComponent.midtermPercentage}' maxFractionDigits='0'/>" 
                                                class="form-control percentage-input" required>
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0" max="100" 
-                                               name="finalPercentage" value="${currentComponent.finalPercentage}" 
+                                             <input type="number" step="1" min="0" max="100" pattern="^\\d{1,3}$"
+                                                 name="finalPercentage" value="<fmt:formatNumber value='${currentComponent.finalPercentage}' maxFractionDigits='0'/>" 
                                                class="form-control percentage-input" required>
                                     </td>
                                     <td class="total-display">100%</td>
@@ -100,18 +101,18 @@
                                     <input type="hidden" name="courseId" value="${course.courseId}">
                                     <input type="hidden" name="semesterId" value="${semester.id}">
                                     <td>
-                                        <input type="number" step="0.01" min="0" max="100" 
-                                               name="inclassPercentage" value="20.00" 
+                                             <input type="number" step="1" min="0" max="100" pattern="^\\d{1,3}$"
+                                                 name="inclassPercentage" value="20" 
                                                class="form-control percentage-input" required>
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0" max="100" 
-                                               name="midtermPercentage" value="30.00" 
+                                             <input type="number" step="1" min="0" max="100" pattern="^\\d{1,3}$"
+                                                 name="midtermPercentage" value="30" 
                                                class="form-control percentage-input" required>
                                     </td>
                                     <td>
-                                        <input type="number" step="0.01" min="0" max="100" 
-                                               name="finalPercentage" value="50.00" 
+                                             <input type="number" step="1" min="0" max="100" pattern="^\\d{1,3}$"
+                                                 name="finalPercentage" value="50" 
                                                class="form-control percentage-input" required>
                                     </td>
                                     <td class="total-display">100%</td>
@@ -136,32 +137,37 @@
 <script>
 // Update total percentage display as user types
 document.querySelectorAll('.component-form').forEach(form => {
-    const inputs = form.querySelectorAll('.percentage-input');
-    const totalDisplay = form.querySelector('.total-display');
-    
-    inputs.forEach(input => {
-        input.addEventListener('input', () => {
-            const total = Array.from(inputs).reduce((sum, inp) => {
-                return sum + (parseFloat(inp.value) || 0);
-            }, 0);
-            
-            totalDisplay.textContent = total.toFixed(2) + '%';
-            totalDisplay.style.color = Math.abs(total - 100) < 0.01 ? '#28a745' : '#dc3545';
-        });
-    });
+    const row = form.closest('tr');
+    const totalDisplay = row ? row.querySelector('.total-display') : null;
+
+    const getInputs = () => Array.from(form.elements)
+        .filter(el => el && el.classList && el.classList.contains('percentage-input'));
+
+    const updateTotal = () => {
+        const inputs = getInputs();
+        const total = inputs.reduce((sum, inp) => sum + (parseInt(inp.value, 10) || 0), 0);
+        if (totalDisplay) {
+            totalDisplay.textContent = total + '%';
+            totalDisplay.style.color = total === 100 ? '#28a745' : '#dc3545';
+        }
+    };
+
+    // Wire up listeners and initialize display
+    getInputs().forEach(input => input.addEventListener('input', updateTotal));
+    updateTotal();
 });
 
 function validatePercentages(form) {
-    const inputs = form.querySelectorAll('.percentage-input');
-    const total = Array.from(inputs).reduce((sum, input) => {
-        return sum + (parseFloat(input.value) || 0);
-    }, 0);
-    
-    if (Math.abs(total - 100) > 0.01) {
-        alert('Percentages must add up to 100%. Current total: ' + total.toFixed(2) + '%');
+    // Use form.elements to avoid issues with display: contents
+    const inputs = Array.from(form.elements)
+        .filter(el => el && el.classList && el.classList.contains('percentage-input'));
+    const total = inputs.reduce((sum, input) => sum + (parseInt(input.value, 10) || 0), 0);
+
+    if (total !== 100) {
+        alert('Percentages must be integers and add up to 100%. Current total: ' + total + '%');
         return false;
     }
-    
+
     return true;
 }
 </script>

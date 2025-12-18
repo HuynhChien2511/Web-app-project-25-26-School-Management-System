@@ -113,20 +113,22 @@ public class Grade {
     // Helper methods
     public static String calculateLetterGrade(BigDecimal score) {
         if (score == null) return "N/A";
-        
-        double scoreValue = score.doubleValue();
-        
-        if (scoreValue >= 93.0) return "A";
-        if (scoreValue >= 90.0) return "A-";
-        if (scoreValue >= 87.0) return "B+";
-        if (scoreValue >= 83.0) return "B";
-        if (scoreValue >= 80.0) return "B-";
-        if (scoreValue >= 77.0) return "C+";
-        if (scoreValue >= 73.0) return "C";
-        if (scoreValue >= 70.0) return "C-";
-        if (scoreValue >= 67.0) return "D+";
-        if (scoreValue >= 60.0) return "D";
-        return "F";
+
+        double s = score.doubleValue();
+
+        if (s >= 90.0) return "A+";
+        if (s >= 85.0) return "A";
+        if (s >= 80.0) return "A-";
+        if (s >= 75.0) return "B+";
+        if (s >= 70.0) return "B";
+        if (s >= 65.0) return "B-";
+        if (s >= 60.0) return "C+";
+        if (s >= 55.0) return "C";
+        if (s >= 50.0) return "C-";   // passing threshold requested at 50
+        if (s >= 45.0) return "D+";
+        if (s >= 40.0) return "D";
+        if (s >= 36.0) return "D-";
+        return "F"; // 0-35
     }
     
     public static BigDecimal calculateGradePoint(String letterGrade) {
@@ -135,7 +137,8 @@ public class Grade {
         }
         
         switch (letterGrade) {
-            case "A": return new BigDecimal("4.00");
+            case "A+": return new BigDecimal("4.00");
+            case "A": return new BigDecimal("3.90");
             case "A-": return new BigDecimal("3.70");
             case "B+": return new BigDecimal("3.30");
             case "B": return new BigDecimal("3.00");
@@ -145,6 +148,7 @@ public class Grade {
             case "C-": return new BigDecimal("1.70");
             case "D+": return new BigDecimal("1.30");
             case "D": return new BigDecimal("1.00");
+            case "D-": return new BigDecimal("0.70");
             case "F": return BigDecimal.ZERO;
             default: return BigDecimal.ZERO;
         }
@@ -164,8 +168,8 @@ public class Grade {
         this.gradePoint = calculateGradePoint(letterGrade);
     }
     
-    public boolean isComplete() {
-        return inclassScore != null && midtermScore != null && finalScore != null && totalScore != null;
+    public boolean hasAllComponentScores() {
+        return inclassScore != null && midtermScore != null && finalScore != null;
     }
     
     @Override

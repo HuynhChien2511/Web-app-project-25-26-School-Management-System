@@ -77,21 +77,21 @@
                             <td>${enrollment.studentId}</td>
                             <td><strong>${enrollment.studentName}</strong></td>
                             <td>
-                                <input type="number" step="0.01" min="0" max="100" 
+                                    <input type="number" step="1" min="0" max="100" pattern="^\\d{1,3}$"
                                        name="inclass_${enrollment.enrollmentId}" 
                                        class="form-control grade-input"
                                        value="${grade != null && grade.inclassScore != null ? grade.inclassScore : ''}"
                                        placeholder="0.00">
                             </td>
                             <td>
-                                <input type="number" step="0.01" min="0" max="100" 
+                                    <input type="number" step="1" min="0" max="100" pattern="^\\d{1,3}$"
                                        name="midterm_${enrollment.enrollmentId}" 
                                        class="form-control grade-input"
                                        value="${grade != null && grade.midtermScore != null ? grade.midtermScore : ''}"
                                        placeholder="0.00">
                             </td>
                             <td>
-                                <input type="number" step="0.01" min="0" max="100" 
+                                    <input type="number" step="1" min="0" max="100" pattern="^\\d{1,3}$"
                                        name="final_${enrollment.enrollmentId}" 
                                        class="form-control grade-input"
                                        value="${grade != null && grade.finalScore != null ? grade.finalScore : ''}"
