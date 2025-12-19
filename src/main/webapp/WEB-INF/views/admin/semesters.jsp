@@ -86,6 +86,16 @@
                                class="btn btn-sm btn-warning" title="Edit">
                                 ✏️ Edit
                             </a>
+                            <c:if test="${!semester.active}">
+                                <form method="post" action="${pageContext.request.contextPath}/admin/semesters/activate" 
+                                      style="display: inline;">
+                                    <input type="hidden" name="semesterId" value="${semester.id}">
+                                    <button type="submit" class="btn btn-sm btn-success" 
+                                            onclick="return confirm('Activate this semester? This will deactivate all other semesters.')">
+                                        ✓ Activate
+                                    </button>
+                                </form>
+                            </c:if>
                             <form method="post" action="${pageContext.request.contextPath}/admin/semesters/delete" 
                                   style="display: inline;">
                                 <input type="hidden" name="semesterId" value="${semester.id}">
