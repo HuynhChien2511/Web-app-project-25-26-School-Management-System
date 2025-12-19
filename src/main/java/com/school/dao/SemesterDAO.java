@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +89,12 @@ public class SemesterDAO {
     }
 
     public Semester getActiveSemester() {
+        // First auto-create any missing semesters for current and next year
+        autoCreateSemesters();
+        
+        // Then check and auto-activate semester based on current date
+        autoActivateSemester();
+        
         String sql = "SELECT * FROM semesters WHERE is_active = TRUE LIMIT 1";
         
         try (Connection conn = DatabaseConnection.getConnection();
@@ -205,6 +212,130 @@ public class SemesterDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * Checks if a semester exists for the given academic year and type.
+     */
+    private boolean semesterExists(String academicYear, Semester.SemesterType semesterType) {
+        String sql = "SELECT COUNT(*) FROM semesters WHERE academic_year = ? AND semester_type = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, academicYear);
+            stmt.setString(2, semesterType.name());
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Auto-creates semesters for current and next academic year if they don't exist.
+     * Fall semester (SEMESTER_1): September 5 - December 20 (16 weeks)
+     * Spring semester (SEMESTER_2): January 15 - May 15 (16 weeks)
+     * Summer semester (SEMESTER_3): June 1 - July 31 (8 weeks)
+     */
+    public void autoCreateSemesters() {
+        LocalDate today = LocalDate.now();
+        int currentYear = today.getYear();
+        
+        // Determine current and next academic year
+        // Academic year starts in September (e.g., 2025-2026 starts Sept 2025)
+        int academicStartYear = today.getMonthValue() >= 9 ? currentYear : currentYear - 1;
+        int academicEndYear = academicStartYear + 1;
+        
+        String currentAcademicYear = academicStartYear + "-" + academicEndYear;
+        String nextAcademicYear = academicEndYear + "-" + (academicEndYear + 1);
+        
+        // Create semesters for current academic year
+        createSemesterIfNotExists(currentAcademicYear, academicStartYear, academicEndYear);
+        
+        // Create semesters for next academic year
+        createSemesterIfNotExists(nextAcademicYear, academicEndYear, academicEndYear + 1);
+    }
+
+    /**
+     * Creates semesters for a given academic year if they don't exist.
+     */
+    private void createSemesterIfNotExists(String academicYear, int startYear, int endYear) {
+        // Fall Semester (SEMESTER_1): September 5 - December 20
+        if (!semesterExists(academicYear, Semester.SemesterType.SEMESTER_1)) {
+            Semester fall = new Semester();
+            fall.setSemesterName("Fall " + startYear);
+            fall.setSemesterType(Semester.SemesterType.SEMESTER_1);
+            fall.setAcademicYear(academicYear);
+            fall.setStartDate(LocalDate.of(startYear, 9, 5));
+            fall.setEndDate(LocalDate.of(startYear, 12, 20));
+            fall.setWeeks(16);
+            fall.setActive(false);
+            createSemester(fall);
+        }
+        
+        // Spring Semester (SEMESTER_2): January 15 - May 15
+        if (!semesterExists(academicYear, Semester.SemesterType.SEMESTER_2)) {
+            Semester spring = new Semester();
+            spring.setSemesterName("Spring " + endYear);
+            spring.setSemesterType(Semester.SemesterType.SEMESTER_2);
+            spring.setAcademicYear(academicYear);
+            spring.setStartDate(LocalDate.of(endYear, 1, 15));
+            spring.setEndDate(LocalDate.of(endYear, 5, 15));
+            spring.setWeeks(16);
+            spring.setActive(false);
+            createSemester(spring);
+        }
+        
+        // Summer Semester (SEMESTER_3): June 1 - July 31
+        if (!semesterExists(academicYear, Semester.SemesterType.SEMESTER_3)) {
+            Semester summer = new Semester();
+            summer.setSemesterName("Summer " + endYear);
+            summer.setSemesterType(Semester.SemesterType.SEMESTER_3);
+            summer.setAcademicYear(academicYear);
+            summer.setStartDate(LocalDate.of(endYear, 6, 1));
+            summer.setEndDate(LocalDate.of(endYear, 7, 31));
+            summer.setWeeks(8);
+            summer.setActive(false);
+            createSemester(summer);
+        }
+    }
+
+    /**
+     * Auto-activates semester based on current date.
+     * Checks if current date falls within any semester's date range and activates it.
+     */
+    public void autoActivateSemester() {
+        LocalDate today = LocalDate.now();
+        String sql = "SELECT semester_id FROM semesters WHERE ? BETWEEN start_date AND end_date LIMIT 1";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setDate(1, Date.valueOf(today));
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                int semesterIdToActivate = rs.getInt("semester_id");
+                
+                // Check if this semester is already active
+                String checkSql = "SELECT semester_id FROM semesters WHERE is_active = TRUE LIMIT 1";
+                try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                    ResultSet checkRs = checkStmt.executeQuery();
+                    
+                    // Only activate if different semester or no active semester
+                    if (!checkRs.next() || checkRs.getInt("semester_id") != semesterIdToActivate) {
+                        setActiveSemester(semesterIdToActivate);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private Semester extractSemesterFromResultSet(ResultSet rs) throws SQLException {

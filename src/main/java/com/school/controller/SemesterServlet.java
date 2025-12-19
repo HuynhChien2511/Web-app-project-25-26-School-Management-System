@@ -79,9 +79,6 @@ public class SemesterServlet extends HttpServlet {
             case "/update":
                 updateSemester(request, response);
                 break;
-            case "/activate":
-                activateSemester(request, response);
-                break;
             case "/delete":
                 deleteSemester(request, response);
                 break;
@@ -209,18 +206,6 @@ public class SemesterServlet extends HttpServlet {
             request.getSession().setAttribute("message", "Semester updated successfully!");
         } else {
             request.getSession().setAttribute("error", "Failed to update semester.");
-        }
-        response.sendRedirect(request.getContextPath() + "/admin/semesters/list");
-    }
-
-    private void activateSemester(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        int semesterId = Integer.parseInt(request.getParameter("semesterId"));
-        
-        if (semesterDAO.setActiveSemester(semesterId)) {
-            request.getSession().setAttribute("message", "Semester activated successfully!");
-        } else {
-            request.getSession().setAttribute("error", "Failed to activate semester.");
         }
         response.sendRedirect(request.getContextPath() + "/admin/semesters/list");
     }
