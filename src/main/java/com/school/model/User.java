@@ -16,7 +16,7 @@ public class User {
     public enum UserType {
         ADMIN, TEACHER, STUDENT
     }
-
+    
     // Constructors
     public User() {
     }
